@@ -1332,7 +1332,7 @@ t1326151152
 s622
 
 N/Users/anthony/Desktop/art/of_preRelease_v007_osx/apps/addonsExamples/ofxKinectCamaraWorking/bin//opencvExampleDebug.app/Contents/MacOS/opencvExampleDebug
-t1326154585
+t1326154601
 s6400572
 
 N/Users/anthony/Desktop/art/of_preRelease_v007_osx/apps/addonsExamples/ofxKinectCamaraWorking/bin//opencvExampleDebug.app/Contents/PkgInfo
@@ -1493,9 +1493,9 @@ i"testApp.h"
 i"ofAppGlutWindow.h"
 
 N/Users/anthony/Desktop/art/of_preRelease_v007_osx/apps/addonsExamples/ofxKinectCamaraWorking/src/testApp.cpp
-c000000004F0B8353000000000000132F
-t1326154579
-s4911
+c000000004F0B84F80000000000001073
+t1326155000
+s4211
 i"testApp.h"
 
 N/Users/anthony/Desktop/art/of_preRelease_v007_osx/apps/addonsExamples/ofxKinectCamaraWorking/src/testApp.h
