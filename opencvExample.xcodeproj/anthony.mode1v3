@@ -299,7 +299,7 @@
 							<real>423</real>
 						</array>
 						<key>RubberWindowFrame</key>
-						<string>95 -567 1280 722 0 0 1280 778 </string>
+						<string>27 56 1280 722 0 0 1280 778 </string>
 					</dict>
 					<key>Module</key>
 					<string>PBXSmartGroupTreeModule</string>
@@ -329,7 +329,7 @@
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>92CC529B14BBB6B80068FA81</string>
+										<string>92CC52AE14BBBAD90068FA81</string>
 										<key>history</key>
 										<array>
 											<string>92C71F911499AF2200E6F730</string>
@@ -358,9 +358,10 @@
 											<string>92C71FA81499AF2200E6F730</string>
 											<string>92C71FA91499AF2200E6F730</string>
 											<string>92C71FAA1499AF2200E6F730</string>
-											<string>92CC523A14BBB2C90068FA81</string>
-											<string>92CC523B14BBB2C90068FA81</string>
-											<string>92CC523C14BBB2C90068FA81</string>
+											<string>92CC52AA14BBBAD90068FA81</string>
+											<string>92CC52AB14BBBAD90068FA81</string>
+											<string>92CC52AC14BBBAD90068FA81</string>
+											<string>92CC52AD14BBBAD90068FA81</string>
 										</array>
 									</dict>
 									<key>SplitCount</key>
@@ -374,7 +375,7 @@
 								<key>Frame</key>
 								<string>{{0, 0}, {835, 637}}</string>
 								<key>RubberWindowFrame</key>
-								<string>95 -567 1280 722 0 0 1280 778 </string>
+								<string>27 56 1280 722 0 0 1280 778 </string>
 							</dict>
 							<key>Module</key>
 							<string>PBXNavigatorGroup</string>
@@ -394,7 +395,7 @@
 								<key>Frame</key>
 								<string>{{0, 642}, {835, 39}}</string>
 								<key>RubberWindowFrame</key>
-								<string>95 -567 1280 722 0 0 1280 778 </string>
+								<string>27 56 1280 722 0 0 1280 778 </string>
 							</dict>
 							<key>Module</key>
 							<string>XCDetailModule</string>
@@ -558,16 +559,16 @@
 	<integer>5</integer>
 	<key>WindowOrderList</key>
 	<array>
-		<string>92CC528F14BBB6AA0068FA81</string>
+		<string>92CC52AF14BBBAD90068FA81</string>
 		<string>92CC519814BBAC700068FA81</string>
 		<string>92CC519914BBAC700068FA81</string>
-		<string>1C78EAAD065D492600B07095</string>
 		<string>1CD10A99069EF8BA00B06720</string>
 		<string>92C71F8C1499AF2100E6F730</string>
 		<string>/Users/anthony/Desktop/art/of_preRelease_v007_osx/apps/addonsExamples/ofxKinectCamaraWorking/opencvExample.xcodeproj</string>
+		<string>1C78EAAD065D492600B07095</string>
 	</array>
 	<key>WindowString</key>
-	<string>95 -567 1280 722 0 0 1280 778 </string>
+	<string>27 56 1280 722 0 0 1280 778 </string>
 	<key>WindowToolsV3</key>
 	<array>
 		<dict>
@@ -948,7 +949,7 @@
 			<key>WindowToolGUID</key>
 			<string>1C78EAAD065D492600B07095</string>
 			<key>WindowToolIsVisible</key>
-			<false/>
+			<true/>
 		</dict>
 		<dict>
 			<key>Identifier</key>

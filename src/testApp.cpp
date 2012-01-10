@@ -120,12 +120,13 @@ void testApp::render_texture(ofEventArgs &args)
 			}
 		}
 		
-		depthImage.draw(0,h/2,w/2,h);
+		//depthImage.draw(0,h/2,w/2,h);
 
-		contourFinder.findContours(grayImg, 20, (340*240)/3, 10, true);	// find holes
-		contourFinder.draw(0,0,w,h);
+		contourFinder.findContours(grayImg, 20, (340*240)/1, 10, true);	// find holes
 		
-		//grayImg.draw(0,0,w,h);
+		grayImg.draw(0,h/2,w/2,h);
+		contourFinder.draw(0,h/2,w/2,h);
+		
 		
 		//kinect.getDepthTextureReference().draw(0, 0, w, h);
 	}
