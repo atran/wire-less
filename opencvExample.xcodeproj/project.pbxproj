@@ -12,7 +12,6 @@
 		92C71E2F1499ADF000E6F730 /* ofxCvFloatImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 92C71E1B1499ADF000E6F730 /* ofxCvFloatImage.cpp */; };
 		92C71E301499ADF000E6F730 /* ofxCvGrayscaleImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 92C71E1D1499ADF000E6F730 /* ofxCvGrayscaleImage.cpp */; };
 		92C71E311499ADF000E6F730 /* ofxCvImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 92C71E1F1499ADF000E6F730 /* ofxCvImage.cpp */; };
-		92C71E321499ADF000E6F730 /* ofxCvHaarFinder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 92C71E211499ADF000E6F730 /* ofxCvHaarFinder.cpp */; };
 		92C71E331499ADF000E6F730 /* ofxCvShortImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 92C71E241499ADF000E6F730 /* ofxCvShortImage.cpp */; };
 		92C71F201499AE4700E6F730 /* cameras.c in Sources */ = {isa = PBXBuildFile; fileRef = 92C71EBB1499AE4700E6F730 /* cameras.c */; };
 		92C71F211499AE4700E6F730 /* core.c in Sources */ = {isa = PBXBuildFile; fileRef = 92C71EBC1499AE4700E6F730 /* core.c */; };
@@ -102,8 +101,6 @@
 		92C71E1E1499ADF000E6F730 /* ofxCvGrayscaleImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ofxCvGrayscaleImage.h; path = ../../../addons/ofxOpenCv/src/ofxCvGrayscaleImage.h; sourceTree = SOURCE_ROOT; };
 		92C71E1F1499ADF000E6F730 /* ofxCvImage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ofxCvImage.cpp; path = ../../../addons/ofxOpenCv/src/ofxCvImage.cpp; sourceTree = SOURCE_ROOT; };
 		92C71E201499ADF000E6F730 /* ofxCvImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ofxCvImage.h; path = ../../../addons/ofxOpenCv/src/ofxCvImage.h; sourceTree = SOURCE_ROOT; };
-		92C71E211499ADF000E6F730 /* ofxCvHaarFinder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ofxCvHaarFinder.cpp; path = ../../../addons/ofxOpenCv/src/ofxCvHaarFinder.cpp; sourceTree = SOURCE_ROOT; };
-		92C71E221499ADF000E6F730 /* ofxCvHaarFinder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ofxCvHaarFinder.h; path = ../../../addons/ofxOpenCv/src/ofxCvHaarFinder.h; sourceTree = SOURCE_ROOT; };
 		92C71E231499ADF000E6F730 /* ofxCvMain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ofxCvMain.h; path = ../../../addons/ofxOpenCv/src/ofxCvMain.h; sourceTree = SOURCE_ROOT; };
 		92C71E241499ADF000E6F730 /* ofxCvShortImage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ofxCvShortImage.cpp; path = ../../../addons/ofxOpenCv/src/ofxCvShortImage.cpp; sourceTree = SOURCE_ROOT; };
 		92C71E251499ADF000E6F730 /* ofxCvShortImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ofxCvShortImage.h; path = ../../../addons/ofxOpenCv/src/ofxCvShortImage.h; sourceTree = SOURCE_ROOT; };
@@ -280,8 +277,6 @@
 				92C71E1E1499ADF000E6F730 /* ofxCvGrayscaleImage.h */,
 				92C71E1F1499ADF000E6F730 /* ofxCvImage.cpp */,
 				92C71E201499ADF000E6F730 /* ofxCvImage.h */,
-				92C71E211499ADF000E6F730 /* ofxCvHaarFinder.cpp */,
-				92C71E221499ADF000E6F730 /* ofxCvHaarFinder.h */,
 				92C71E231499ADF000E6F730 /* ofxCvMain.h */,
 				92C71E241499ADF000E6F730 /* ofxCvShortImage.cpp */,
 				92C71E251499ADF000E6F730 /* ofxCvShortImage.h */,
@@ -972,7 +967,6 @@
 				92C71E2F1499ADF000E6F730 /* ofxCvFloatImage.cpp in Sources */,
 				92C71E301499ADF000E6F730 /* ofxCvGrayscaleImage.cpp in Sources */,
 				92C71E311499ADF000E6F730 /* ofxCvImage.cpp in Sources */,
-				92C71E321499ADF000E6F730 /* ofxCvHaarFinder.cpp in Sources */,
 				92C71E331499ADF000E6F730 /* ofxCvShortImage.cpp in Sources */,
 				92C71F201499AE4700E6F730 /* cameras.c in Sources */,
 				92C71F211499AE4700E6F730 /* core.c in Sources */,

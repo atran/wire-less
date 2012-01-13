@@ -48,7 +48,8 @@ public:
 	bool init_kinect();
 	bool update_kinect();
 	
-	
+	int far;
+	int near;
 	//	ui
 	
 	bool pressed[512];
@@ -57,9 +58,11 @@ public:
 	// analysis
 	ofxCvContourFinder 	contourFinder;
 
-	ofxCvGrayscaleImage grayImg;
+	ofxCvGrayscaleImage grayImage;
 	ofxCvGrayscaleImage depthImage;
-	
+	ofxCvColorImage colorImg;
+
+	ofPolyline toOf(const ofxCvBlob& blob);
 	// app
 	
 	void setup();

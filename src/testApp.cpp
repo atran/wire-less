@@ -8,10 +8,11 @@ void testApp::setup()
 	ofSetLogLevel(OF_LOG_VERBOSE);
 	
 	init_keys();
-	debug_depth_texture = false;
+	debug_depth_texture = true;
 	
-	grayImg.allocate(kinect.getWidth(), kinect.getHeight());
+	grayImage.allocate(kinect.getWidth(), kinect.getHeight());
 	depthImage.allocate(kinect.getWidth(), kinect.getHeight());
+	colorImg.allocate(kinect.getWidth(), kinect.getHeight());
 	
 	if (!init_kinect())
 		return;
@@ -25,6 +26,9 @@ void testApp::setup()
 	
 	ofAddListener(camluc.render_texture, this, &testApp::render_texture);
 	ofAddListener(camluc.render_hud, this, &testApp::render_hud);
+	
+	far = 162;
+	near = 120;
 }
 
 void testApp::update()
@@ -40,9 +44,9 @@ void testApp::draw()
 {	
 	camluc.render();
 	
-	glScalef(1, -1, 1);
-	glTranslatef(-0.3, 0.3, 1);
-	glutWireTeapot(0.1);
+	//glScalef(1, -1, 1);
+	//glTranslatef(-0.3, 0.3, 1);
+	//glutWireTeapot(0.1);
 }
 
 void testApp::exit()
@@ -62,16 +66,12 @@ void testApp::exit()
 void testApp::render_hud(ofEventArgs &args)
 {
 	ofDrawBitmapString("press 'o' to debug camera as a texture \n 'd' to toggle camara lucida debug, then use 'v' to change viewpoint between camera and projector \n mousedrag to rotate, 'z'+mousedrag to zoom, 'x' to reset the debug transformations \n and 'c'+keyup/down to change depth xoffset", 10, 10);
-	
-	if (debug_depth_texture)
-	{
-		kinect.getDepthTextureReference().draw(0, 0, 400, 300);
-	}
+
 }
 
 void testApp::render_texture(ofEventArgs &args)
 {
-	glClearColor(0.5, 0, 0, 1);
+	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	float w = 1024;
@@ -84,39 +84,71 @@ void testApp::render_texture(ofEventArgs &args)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	
-	if (debug_depth_texture)
-	{
-		glColor3f(1, 1, 1);
-		
-		grayImg.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
-		
-		unsigned char * pix = grayImg.getPixels();
-		int numPixels = grayImg.getWidth() * grayImg.getHeight()-1;
-		
-		depthImage.setFromPixels(pix, kinect.width, kinect.height);
-		depthImage.flagImageChanged();
-		
-		for (int i = numPixels; i > 0; i--){
-			if (pix[i] > 40 && pix[i] < 180) {
-				pix[i] = 255;
-			} else {
-				pix[i] = 0;
-			}
+	glColor3f(1, 1, 1);
+	
+	grayImage.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
+
+	unsigned char * pix = grayImage.getPixels();
+	int numPixels = grayImage.getWidth() * grayImage.getHeight()-1;
+	
+	depthImage.setFromPixels(pix, kinect.width, kinect.height);
+	depthImage.flagImageChanged();
+	
+	for (int i = numPixels; i > 0; i--){
+		if (pix[i] > near && pix[i] < far) {
+			pix[i] = 255;
+		} else {
+			pix[i] = 0;
 		}
-		
-		//depthImage.draw(0,h/2,w/2,h);
-
-		contourFinder.findContours(grayImg, 20, (340*240)/1, 10, true);	// find holes
-		
-		grayImg.draw(0,h/2,w/2,h);
-		contourFinder.draw(0,h/2,w/2,h);c
-		
-		
-		//kinect.getDepthTextureReference().draw(0, 0, w, h);
 	}
+	
+	contourFinder.findContours(grayImage, 500, (340*240)/1, 5, false);	// find holes
+	
+	for (int i = 0; i < contourFinder.nBlobs; i++){
+//		ofPushMatrix();
+//		
+//		ofxCvBlob blob = contourFinder.blobs[i];
+//		
+//		for (int k=0; k<blob.nPts; k++) {
+//			ofSetColor(255,255,255,1.0);
+//			//ofCircle(contourFinder.blobs[i].pts[k].x, contourFinder.blobs[i].pts[k].y,20);
+//			
+//			//perpendicular lines
+//			vector<ofPoint> points = blob.pts; //full of contour points
+//			float length = 10; //defines how long the perpendicular lines are.
+//
+//
+//			for(int i = 0; i < points.size()-1; i++){
+//				ofVec2f perpendicular = ofVec2f( (points[i+1] - points[i]) ).getPerpendicular() * length;
+//				ofLine(points[i], points[i]+perpendicular);
+//			}
+//			
+//		}
+//		
+//		ofSetColor(255, 0, 0);
+//		ofFill();
+//		ofEllipse(contourFinder.blobs[i].centroid.x, contourFinder.blobs[i].centroid.y, 4, 4);
+//		
+//		ofPopMatrix();
+	
+		ofPolyline polyline = toOf(contourFinder.blobs[i]);
+		ofPolyline smoothed = polyline.getSmoothed(8);
+		smoothed.draw();		
+	}
+	
+	//depthImage.draw(0,h/2,w/2,h);
+	//grayImage.draw(0,0,w,h);
+	//kinect.getDepthTextureReference().draw(w/2, h/2, w/2+400, h/2+300);	
+	//contourFinder.draw(0, 0, w, h);
 
-	glColor3f(1, 1, 0);
-	ofCircle(800, 200, 100);
+	//glColor3f(1, 1, 0);
+	//ofCircle(800, 200, 100);
+}
+
+ofPolyline testApp::toOf(const ofxCvBlob& blob) {
+	ofPolyline polyline;
+	polyline.addVertexes(blob.pts);
+	return polyline;
 }
 
 bool testApp::init_kinect()
@@ -164,10 +196,10 @@ void testApp::keyPressed(int key)
 			}
 			break;		
 			
-		case 'o':
-			debug_depth_texture = !debug_depth_texture;
+		//case 'o':
+			//debug_depth_texture = !debug_depth_texture;
 			//kinect.toggleCalibrationUpdate();
-			break;
+			//break;
 	}
 	
 	if (key == 'd')
@@ -177,6 +209,19 @@ void testApp::keyPressed(int key)
 	if (key == 'f')
 	{
 		mesh->print();
+	}
+	if (key == 't') 
+	{
+		far++;
+	}
+	if (key == 'y'){
+		far--;
+	}
+	if (key == 'u'){
+		near++;
+	}
+	if (key =='i') {
+		near--;
 	}
 }
 
