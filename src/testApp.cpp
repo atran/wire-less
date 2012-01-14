@@ -34,13 +34,13 @@ void testApp::setup()
 	far = 162;
 	near = 120;
 	
-	currentLine.p0.x = 1;
-	currentLine.p0.y = 100;
-	currentLine.p1.x = 100;
-	currentLine.p1.y = 100;
-	
-	lines.push_back(currentLine);
-	ofLine(currentLine.p0.x, currentLine.p0.y, currentLine.p1.x, currentLine.p1.y);
+	for (int z = 0; z < 400; z+=10) {
+		currentLine.p0.x = 0;
+		currentLine.p0.y = z;
+		currentLine.p1.x = 1000;
+		currentLine.p1.y = z;
+		lines.push_back(currentLine);
+	}
 	
 }
 
@@ -51,6 +51,8 @@ void testApp::update()
 	
 	if (kinect.isFrameNew())
 		camluc.update();
+		a += ofDegToRad(10);
+		alphaPulse = abs(sin(a)) * 255;
 }
 
 void testApp::draw()
@@ -116,7 +118,11 @@ void testApp::render_texture(ofEventArgs &args)
 		}
 	}
 	
-	ofScale(1.6, 1.6, 1);
+
+			
+	ofTranslate(w,0); 
+	ofScale(-1.6, 1.6, 1);
+	
 	contourFinder.findContours(grayImage, 500, (340*240)/1, 5, false);	// find holes
 	
 	for (int i = 0; i < contourFinder.nBlobs; i++){
@@ -147,23 +153,29 @@ void testApp::render_texture(ofEventArgs &args)
 //		ofPopMatrix();
 
 		polyline = toOf(contourFinder.blobs[i]);
-		polyline = polyline.getResampledBySpacing(100);	
+		polyline = polyline.getResampledBySpacing(10);	
 		polyline.setClosed(true);
 		polyline.draw();
 		
 		
 		bool success = true;
+		cout << lines.size() << endl;
 		
-		LineSegment clippedLine = constrainLineToPolygon(&currentLine, &polyline, success);
+		for(int t = 0; t < lines.size(); t++) {
+			
+			//ofSetColor(255,200);
+			//ofLine(lines[t].p0.x, lines[t].p0.y, lines[t].p1.x, lines[t].p1.y);
+			LineSegment clippedLine = constrainLineToPolygon(&lines[t], &polyline, success);
 		
-		if(success) {
-			ofPushStyle();
-			ofSetLineWidth(6);
-			ofSetColor(0,255,0);
-			clippedLine.draw();
-			ofPopStyle();
-		} 
-		currentLinePoint = 0;
+			if(success) {
+				ofPushStyle();
+				ofSetLineWidth(6);
+				ofSetColor(0,255,0,alphaPulse);
+				clippedLine.draw();
+				ofPopStyle();
+			} 
+			currentLinePoint = 0;
+		}
 		
 	}
 	
@@ -279,7 +291,7 @@ void testApp::mouseDragged(int x, int y, int button)
 
 void testApp::mousePressed(int x, int y, int button)
 {
-	
+	cout << x << ", " << y << endl;
 }
 
 void testApp::mouseReleased(int x, int y, int button)
@@ -342,7 +354,6 @@ LineSegment testApp::constrainLineToPolygon(LineSegment* ls, ofPolyline* poly, b
     // there are a few pathological cases, which are possible to figure out, but
     // a bit more difficult.  basically it can happen when a line passes
     // through a polygon's concavity (generating more than 2 intersections)
-	cout << "number of intersections: " << intersections.size() << endl;
     if(intersections.size() > 3) {
         cout << "Found more than three intersection points ... failing b/c of laziness: " << intersections.size() << endl;
 
@@ -377,6 +388,5 @@ LineSegment testApp::constrainLineToPolygon(LineSegment* ls, ofPolyline* poly, b
 	}
     
     // return the line, whether modified or not.
-	cout << theLs.p0 << " + " << theLs.p1 << ", " << success << endl;
     return theLs;
 }
