@@ -49,8 +49,15 @@ public:
 	bool init_kinect();
 	bool update_kinect();
 	
+	// threshold
 	int far;
 	int near;
+	
+	//serial
+	ofSerial	serial;
+	bool		radio_on;
+	int			rf;
+
 	//	ui
 	
 	bool pressed[512];
@@ -61,6 +68,8 @@ public:
 
 	ofxCvGrayscaleImage grayImage;
 	ofxCvGrayscaleImage depthImage;
+	ofxCvGrayscaleImage pastDepth;
+
 	ofxCvColorImage colorImg;
 
 	ofPolyline toOf(const ofxCvBlob& blob);

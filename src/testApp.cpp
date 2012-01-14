@@ -17,6 +17,7 @@ void testApp::setup()
 	grayImage.allocate(kinect.getWidth(), kinect.getHeight());
 	depthImage.allocate(kinect.getWidth(), kinect.getHeight());
 	colorImg.allocate(kinect.getWidth(), kinect.getHeight());
+	pastDepth.allocate(kinect.getWidth(), kinect.getHeight());
 	
 	if (!init_kinect())
 		return;
@@ -30,10 +31,12 @@ void testApp::setup()
 	
 	ofAddListener(camluc.render_texture, this, &testApp::render_texture);
 	ofAddListener(camluc.render_hud, this, &testApp::render_hud);
-	
+		
+	//thresholds
 	far = 162;
 	near = 120;
 	
+	//generate lines
 	for (int z = 0; z < 400; z+=10) {
 		currentLine.p0.x = 0;
 		currentLine.p0.y = z;
@@ -42,6 +45,11 @@ void testApp::setup()
 		lines.push_back(currentLine);
 	}
 	
+	//serial
+	serial.listDevices();
+	vector <ofSerialDeviceInfo> deviceList = serial.getDeviceList();
+	serial.setup("/dev/cu.usbmodemfa131",57600); 
+	radio_on = false;
 }
 
 void testApp::update()
@@ -53,6 +61,22 @@ void testApp::update()
 		camluc.update();
 		a += ofDegToRad(10);
 		alphaPulse = abs(sin(a)) * 255;
+		
+	if(serial.available() > 1){ 
+		unsigned char bytesReturned[4];      
+		serial.readBytes(bytesReturned, 4); 
+		string serialData = (char*) bytesReturned; // cast to char  
+		rf = ofToInt(serialData);
+		cout << rf << endl;
+		
+		if (rf > 196) { 
+			radio_on = true;
+		}
+		else if (rf < 196 && rf > 0) {
+			radio_on = false;
+		}
+		
+	}
 }
 
 void testApp::draw()
@@ -89,7 +113,7 @@ void testApp::render_texture(ofEventArgs &args)
 {
 	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
+
 	float w = 1024;
 	float h = 768;
 	
@@ -102,14 +126,12 @@ void testApp::render_texture(ofEventArgs &args)
 	
 	glColor3f(1, 1, 1);
 	
+	// create a depth grayscale image, grab the pixels
 	grayImage.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
-
 	unsigned char * pix = grayImage.getPixels();
 	int numPixels = grayImage.getWidth() * grayImage.getHeight()-1;
 	
-	depthImage.setFromPixels(pix, kinect.width, kinect.height);
-	depthImage.flagImageChanged();
-	
+	// binarize depth grayscale image
 	for (int i = numPixels; i > 0; i--){
 		if (pix[i] > near && pix[i] < far) {
 			pix[i] = 255;
@@ -118,65 +140,66 @@ void testApp::render_texture(ofEventArgs &args)
 		}
 	}
 	
-
-			
-	ofTranslate(w,0); 
-	ofScale(-1.6, 1.6, 1);
+	if (radio_on) {
+		ofTranslate(w,0); 
+		ofScale(-1, 1, 1);
 	
-	contourFinder.findContours(grayImage, 500, (340*240)/1, 5, false);	// find holes
+		
+	// accumulate pixels
+		unsigned char * past_pix = pastDepth.getPixels();
 	
-	for (int i = 0; i < contourFinder.nBlobs; i++){
-//		ofPushMatrix();
-//		
-//		ofxCvBlob blob = contourFinder.blobs[i];
-//		
-//		for (int k=0; k<blob.nPts; k++) {
-//			ofSetColor(255,255,255,1.0);
-//			//ofCircle(contourFinder.blobs[i].pts[k].x, contourFinder.blobs[i].pts[k].y,20);
-//			
-//			//perpendicular lines
-//			vector<ofPoint> points = blob.pts; //full of contour points
-//			float length = 10; //defines how long the perpendicular lines are.
-//
-//
-//			for(int i = 0; i < points.size()-1; i++){
-//				ofVec2f perpendicular = ofVec2f( (points[i+1] - points[i]) ).getPerpendicular() * length;
-//				ofLine(points[i], points[i]+perpendicular);
-//			}
-//			
-//		}
-//		
-//		ofSetColor(255, 0, 0);
-//		ofFill();
-//		ofEllipse(contourFinder.blobs[i].centroid.x, contourFinder.blobs[i].centroid.y, 4, 4);
-//		
-//		ofPopMatrix();
-
-		polyline = toOf(contourFinder.blobs[i]);
-		polyline = polyline.getResampledBySpacing(10);	
-		polyline.setClosed(true);
-		polyline.draw();
-		
-		
-		bool success = true;
-		cout << lines.size() << endl;
-		
-		for(int t = 0; t < lines.size(); t++) {
-			
-			//ofSetColor(255,200);
-			//ofLine(lines[t].p0.x, lines[t].p0.y, lines[t].p1.x, lines[t].p1.y);
-			LineSegment clippedLine = constrainLineToPolygon(&lines[t], &polyline, success);
-		
-			if(success) {
-				ofPushStyle();
-				ofSetLineWidth(6);
-				ofSetColor(0,255,0,alphaPulse);
-				clippedLine.draw();
-				ofPopStyle();
-			} 
-			currentLinePoint = 0;
+		for (int i = numPixels; i > 0; i--){
+			if ( pix[i] == 255 || past_pix[i] == 255) {
+				pix[i] = 255;
+			} else {
+				pix[i] = 0;
+			}
 		}
+	
+		depthImage.setFromPixels(pix, kinect.width, kinect.height);
+		depthImage.draw(0,0,w,h);
+	
+		pastDepth.setFromPixels(pix, kinect.width, kinect.height);
 		
+	} else {
+		
+		pastDepth.set(0);
+		
+		depthImage.setFromPixels(pix, kinect.width, kinect.height);
+		
+		ofTranslate(w,0); 
+		ofScale(-1.6, 1.6, 1);
+		
+		contourFinder.findContours(grayImage, 500, (340*240)/1, 5, false);
+		
+		for (int i = 0; i < contourFinder.nBlobs; i++){
+			ofSetColor(255, 0, 0);
+			ofFill();
+			ofEllipse(contourFinder.blobs[i].centroid.x, contourFinder.blobs[i].centroid.y, 4, 4);
+			
+			polyline = toOf(contourFinder.blobs[i]);
+			polyline = polyline.getResampledBySpacing(10);	
+			polyline.setClosed(true);
+			polyline.draw();
+			
+			bool success = true;
+			for(int t = 0; t < lines.size(); t++) {
+				
+				//ofSetColor(255,200);
+				//ofLine(lines[t].p0.x, lines[t].p0.y, lines[t].p1.x, lines[t].p1.y);
+				LineSegment clippedLine = constrainLineToPolygon(&lines[t], &polyline, success);
+			
+				if(success) {
+					ofPushStyle();
+					ofSetLineWidth(10);					
+					ofSetColor(255,0,0,alphaPulse);
+					clippedLine.draw();
+					ofPopStyle();
+				} 
+				currentLinePoint = 0;
+			}
+			
+		}
 	}
 	
 	//depthImage.draw(0,h/2,w/2,h);
@@ -266,6 +289,9 @@ void testApp::keyPressed(int key)
 	if (key =='i') {
 		near--;
 	}
+	if (key =='r') {
+		radio_on = true;
+	}
 }
 
 void testApp::keyReleased(int key)
@@ -319,7 +345,7 @@ LineSegment testApp::constrainLineToPolygon(LineSegment* ls, ofPolyline* poly, b
 	
     // poly isn't big enough, so just return original line
     if(poly->size() < 3) {
-        cout << "Poly has less than 3 points, so we can't really intersect." << endl;
+        // cout << "Poly has less than 3 points, so we can't really intersect." << endl;
         success = false;
         return theLs;
     }
@@ -355,17 +381,16 @@ LineSegment testApp::constrainLineToPolygon(LineSegment* ls, ofPolyline* poly, b
     // a bit more difficult.  basically it can happen when a line passes
     // through a polygon's concavity (generating more than 2 intersections)
     if(intersections.size() > 3) {
-        cout << "Found more than three intersection points ... failing b/c of laziness: " << intersections.size() << endl;
+        // cout << "Found more than three intersection points ... failing b/c of laziness: " << intersections.size() << endl;
 
         success = false;
     } else if (intersections.size() == 3) {
 		success = false;
 		
 		if (intersections[0] == intersections[1]) {
-			cout << "matched first and second" << endl;
+			// cout << "matched first and second" << endl;
 			theLs.p0 = intersections[0];
 			theLs.p1 = intersections[2];
-			cout << theLs.p0 << ", " << theLs.p1 << endl;
 			success = true;
 		}
 	} else if(intersections.size() == 2) {
@@ -380,7 +405,7 @@ LineSegment testApp::constrainLineToPolygon(LineSegment* ls, ofPolyline* poly, b
             theLs.p0 = intersections[0];
             success = true;
         } else {
-            cout << "One intersection was found, but neither are inside ... very curious." << endl;
+            // cout << "One intersection was found, but neither are inside ... very curious." << endl;
             success = false;
         }
     } else if (intersections.size() == 0) {
