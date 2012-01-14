@@ -50,6 +50,7 @@ void testApp::setup()
 	vector <ofSerialDeviceInfo> deviceList = serial.getDeviceList();
 	serial.setup("/dev/cu.usbmodemfa131",57600); 
 	radio_on = false;
+	timer = 0;
 }
 
 void testApp::update()
@@ -63,19 +64,29 @@ void testApp::update()
 		alphaPulse = abs(sin(a)) * 255;
 		
 	if(serial.available() > 1){ 
+		
 		unsigned char bytesReturned[4];      
 		serial.readBytes(bytesReturned, 4); 
 		string serialData = (char*) bytesReturned; // cast to char  
-		rf = ofToInt(serialData);
-		cout << rf << endl;
-		
-		if (rf > 196) { 
+		int rf_holder = ofToInt(serialData);
+		if (rf_holder != 0) rf = rf_holder;
+	}
+	
+	
+	cout << "rf: " << rf << endl;
+	cout << "timer: " << timer << endl;
+	
+	if (timer > 0) {
+		timer--;
+	} else {
+		if (rf > 194) { 
 			radio_on = true;
+			//start 3 second timer
+			timer = 90;
 		}
-		else if (rf < 196 && rf > 0) {
+		else if (rf < 194) {
 			radio_on = false;
-		}
-		
+		}		
 	}
 }
 
@@ -146,6 +157,7 @@ void testApp::render_texture(ofEventArgs &args)
 	
 		
 	// accumulate pixels
+		
 		unsigned char * past_pix = pastDepth.getPixels();
 	
 		for (int i = numPixels; i > 0; i--){

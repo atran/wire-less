@@ -57,6 +57,7 @@ public:
 	ofSerial	serial;
 	bool		radio_on;
 	int			rf;
+	int			timer;
 
 	//	ui
 	
