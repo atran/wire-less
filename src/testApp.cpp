@@ -113,7 +113,7 @@ void testApp::exit()
 
 void testApp::render_hud(ofEventArgs &args)
 {
-	ofDrawBitmapString("press 'o' to debug camera as a texture \n 'd' to toggle camara lucida debug, then use 'v' to change viewpoint between camera and projector \n mousedrag to rotate, 'z'+mousedrag to zoom, 'x' to reset the debug transformations \n and 'c'+keyup/down to change depth xoffset", 10, 10);
+	//ofDrawBitmapString("press 'o' to debug camera as a texture \n 'd' to toggle camara lucida debug, then use 'v' to change viewpoint between camera and projector \n mousedrag to rotate, 'z'+mousedrag to zoom, 'x' to reset the debug transformations \n and 'c'+keyup/down to change depth xoffset", 10, 10);
 
 }
 
@@ -153,7 +153,8 @@ void testApp::render_texture(ofEventArgs &args)
 		ofScale(-1, 1, 1);
 	
 		
-	// accumulate pixels
+		// accumulate pixels
+		// TODO: do alpha blending
 		
 		unsigned char * past_pix = pastDepth.getPixels();
 	

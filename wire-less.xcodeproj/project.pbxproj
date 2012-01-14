@@ -90,7 +90,7 @@
 
 /* Begin PBXFileReference section */
 		920D084F14C103A2002CAC3E /* LineSegment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LineSegment.h; sourceTree = "<group>"; };
-		923F486E14C1840800D6EA50 /* wire-lessDebug.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "wire-lessDebug.app"; path = "bin/wire-lessDebug.app"; sourceTree = "<group>"; };
+		923F486E14C1840800D6EA50 /* wire-lessDebug.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "wire-lessDebug.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		923F488414C1846000D6EA50 /* MSAPingPong.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MSAPingPong.h; sourceTree = "<group>"; };
 		92C71E151499ADF000E6F730 /* ofxCvBlob.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ofxCvBlob.h; path = ../../../addons/ofxOpenCv/src/ofxCvBlob.h; sourceTree = SOURCE_ROOT; };
 		92C71E161499ADF000E6F730 /* ofxCvColorImage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ofxCvColorImage.cpp; path = ../../../addons/ofxOpenCv/src/ofxCvColorImage.cpp; sourceTree = SOURCE_ROOT; };
