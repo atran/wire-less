@@ -33,8 +33,8 @@ void testApp::setup()
 	ofAddListener(camluc.render_hud, this, &testApp::render_hud);
 		
 	//thresholds
-	far = 162;
-	near = 120;
+	far = 189;
+	near = 85;
 	
 	//generate lines
 	for (int z = 0; z < 400; z+=10) {
@@ -72,9 +72,6 @@ void testApp::update()
 		if (rf_holder != 0) rf = rf_holder;
 	}
 	
-	
-	cout << "rf: " << rf << endl;
-	cout << "timer: " << timer << endl;
 	
 	if (timer > 0) {
 		timer--;
@@ -291,15 +288,22 @@ void testApp::keyPressed(int key)
 	if (key == 't') 
 	{
 		far++;
+		cout << "far: " << far << endl;
+
 	}
-	if (key == 'y'){
+	if (key == 'y')
+	{
 		far--;
+		cout << "far: " << far << endl;
 	}
-	if (key == 'u'){
+	if (key == 'u')
+	{
 		near++;
+		cout << "near: " << near << endl;
 	}
 	if (key =='i') {
 		near--;
+		cout << "near: " << near << endl;
 	}
 	if (key =='r') {
 		radio_on = true;

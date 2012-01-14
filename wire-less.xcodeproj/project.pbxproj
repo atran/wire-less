@@ -90,6 +90,8 @@
 
 /* Begin PBXFileReference section */
 		920D084F14C103A2002CAC3E /* LineSegment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LineSegment.h; sourceTree = "<group>"; };
+		923F486E14C1840800D6EA50 /* wire-lessDebug.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "wire-lessDebug.app"; path = "bin/wire-lessDebug.app"; sourceTree = "<group>"; };
+		923F488414C1846000D6EA50 /* MSAPingPong.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MSAPingPong.h; sourceTree = "<group>"; };
 		92C71E151499ADF000E6F730 /* ofxCvBlob.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ofxCvBlob.h; path = ../../../addons/ofxOpenCv/src/ofxCvBlob.h; sourceTree = SOURCE_ROOT; };
 		92C71E161499ADF000E6F730 /* ofxCvColorImage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ofxCvColorImage.cpp; path = ../../../addons/ofxOpenCv/src/ofxCvColorImage.cpp; sourceTree = SOURCE_ROOT; };
 		92C71E171499ADF000E6F730 /* ofxCvColorImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ofxCvColorImage.h; path = ../../../addons/ofxOpenCv/src/ofxCvColorImage.h; sourceTree = SOURCE_ROOT; };
@@ -209,10 +211,6 @@
 		92C71F6A1499AE5900E6F730 /* MSAOpenCLProgram.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MSAOpenCLProgram.cpp; sourceTree = "<group>"; };
 		92C71F6B1499AE5900E6F730 /* MSAOpenCLProgram.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MSAOpenCLProgram.h; sourceTree = "<group>"; };
 		92C71F6C1499AE5900E6F730 /* MSAOpenCLTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MSAOpenCLTypes.h; sourceTree = "<group>"; };
-		92C71F6E1499AE5900E6F730 /* install.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = install.xml; sourceTree = "<group>"; };
-		92C71F6F1499AE5900E6F730 /* LICENSE.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE.txt; sourceTree = "<group>"; };
-		92C71F711499AE5900E6F730 /* MSATimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MSATimer.h; sourceTree = "<group>"; };
-		92C71F741499AE5900E6F730 /* MSAPingPong.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MSAPingPong.h; sourceTree = "<group>"; };
 		BBAB23BE13894E4700AA2426 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = ../../../libs/glut/lib/osx/GLUT.framework; sourceTree = "<group>"; };
 		E4328143138ABC890047C5CB /* openFrameworksLib.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = openFrameworksLib.xcodeproj; path = ../../../libs/openFrameworksCompiled/project/osx/openFrameworksLib.xcodeproj; sourceTree = SOURCE_ROOT; };
 		E45BE9710E8CC7DD009D7055 /* AGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AGL.framework; path = /System/Library/Frameworks/AGL.framework; sourceTree = "<absolute>"; };
@@ -224,7 +222,6 @@
 		E45BE9770E8CC7DD009D7055 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = /System/Library/Frameworks/CoreServices.framework; sourceTree = "<absolute>"; };
 		E45BE9790E8CC7DD009D7055 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
 		E45BE97A0E8CC7DD009D7055 /* QuickTime.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuickTime.framework; path = /System/Library/Frameworks/QuickTime.framework; sourceTree = "<absolute>"; };
-		E4B69B5B0A3A1756003C02F2 /* opencvExampleDebug.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = opencvExampleDebug.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E4B69E1D0A3A1BDC003C02F2 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = src/main.cpp; sourceTree = SOURCE_ROOT; };
 		E4B69E1E0A3A1BDC003C02F2 /* testApp.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = testApp.cpp; path = src/testApp.cpp; sourceTree = SOURCE_ROOT; };
 		E4B69E1F0A3A1BDC003C02F2 /* testApp.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = testApp.h; path = src/testApp.h; sourceTree = SOURCE_ROOT; };
@@ -263,6 +260,23 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		923F488214C1846000D6EA50 /* MSAPingPong */ = {
+			isa = PBXGroup;
+			children = (
+				923F488314C1846000D6EA50 /* src */,
+			);
+			name = MSAPingPong;
+			path = ../../../addons/MSAPingPong;
+			sourceTree = SOURCE_ROOT;
+		};
+		923F488314C1846000D6EA50 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				923F488414C1846000D6EA50 /* MSAPingPong.h */,
+			);
+			path = src;
+			sourceTree = "<group>";
+		};
 		92C71E271499ADF000E6F730 /* src */ = {
 			isa = PBXGroup;
 			children = (
@@ -749,54 +763,17 @@
 			path = src;
 			sourceTree = "<group>";
 		};
-		92C71F6D1499AE5900E6F730 /* MSATimer */ = {
-			isa = PBXGroup;
-			children = (
-				92C71F6E1499AE5900E6F730 /* install.xml */,
-				92C71F6F1499AE5900E6F730 /* LICENSE.txt */,
-				92C71F701499AE5900E6F730 /* src */,
-			);
-			name = MSATimer;
-			path = ../../../addons/MSATimer;
-			sourceTree = SOURCE_ROOT;
-		};
-		92C71F701499AE5900E6F730 /* src */ = {
-			isa = PBXGroup;
-			children = (
-				92C71F711499AE5900E6F730 /* MSATimer.h */,
-			);
-			path = src;
-			sourceTree = "<group>";
-		};
-		92C71F721499AE5900E6F730 /* MSAPingPong */ = {
-			isa = PBXGroup;
-			children = (
-				92C71F731499AE5900E6F730 /* src */,
-			);
-			name = MSAPingPong;
-			path = ../../../addons/MSAPingPong;
-			sourceTree = SOURCE_ROOT;
-		};
-		92C71F731499AE5900E6F730 /* src */ = {
-			isa = PBXGroup;
-			children = (
-				92C71F741499AE5900E6F730 /* MSAPingPong.h */,
-			);
-			path = src;
-			sourceTree = "<group>";
-		};
 		BB4B014C10F69532006C3DED /* addons */ = {
 			isa = PBXGroup;
 			children = (
 				92C71F2E1499AE5900E6F730 /* camara_lucida */,
+				92C71E4C1499AE4700E6F730 /* ofxKinect */,
+				92C71E281499ADF000E6F730 /* ofxOpenCv */,
+				923F488214C1846000D6EA50 /* MSAPingPong */,
 				92C71F3D1499AE5900E6F730 /* ofxXmlSettings */,
 				92C71F471499AE5900E6F730 /* ofxThread */,
 				92C71F4A1499AE5900E6F730 /* MSACore */,
 				92C71F5A1499AE5900E6F730 /* MSAOpenCL */,
-				92C71F6D1499AE5900E6F730 /* MSATimer */,
-				92C71F721499AE5900E6F730 /* MSAPingPong */,
-				92C71E4C1499AE4700E6F730 /* ofxKinect */,
-				92C71E281499ADF000E6F730 /* ofxOpenCv */,
 			);
 			name = addons;
 			sourceTree = "<group>";
@@ -854,7 +831,7 @@
 				E4EEC9E9138DF44700A80321 /* openFrameworks */,
 				BB4B014C10F69532006C3DED /* addons */,
 				E45BE5980E8CC70C009D7055 /* frameworks */,
-				E4B69B5B0A3A1756003C02F2 /* opencvExampleDebug.app */,
+				923F486E14C1840800D6EA50 /* wire-lessDebug.app */,
 			);
 			sourceTree = "<group>";
 		};
@@ -881,9 +858,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		E4B69B5A0A3A1756003C02F2 /* opencvExample */ = {
+		E4B69B5A0A3A1756003C02F2 /* wire-less */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E4B69B5F0A3A1757003C02F2 /* Build configuration list for PBXNativeTarget "opencvExample" */;
+			buildConfigurationList = E4B69B5F0A3A1757003C02F2 /* Build configuration list for PBXNativeTarget "wire-less" */;
 			buildPhases = (
 				E4B69B580A3A1756003C02F2 /* Sources */,
 				E4B69B590A3A1756003C02F2 /* Frameworks */,
@@ -895,9 +872,9 @@
 			dependencies = (
 				E4EEB9AC138B136A00A80321 /* PBXTargetDependency */,
 			);
-			name = opencvExample;
+			name = "wire-less";
 			productName = myOFApp;
-			productReference = E4B69B5B0A3A1756003C02F2 /* opencvExampleDebug.app */;
+			productReference = 923F486E14C1840800D6EA50 /* wire-lessDebug.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -905,7 +882,7 @@
 /* Begin PBXProject section */
 		E4B69B4C0A3A1720003C02F2 /* Project object */ = {
 			isa = PBXProject;
-			buildConfigurationList = E4B69B4D0A3A1720003C02F2 /* Build configuration list for PBXProject "opencvExample" */;
+			buildConfigurationList = E4B69B4D0A3A1720003C02F2 /* Build configuration list for PBXProject "wire-less" */;
 			compatibilityVersion = "Xcode 2.4";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -926,7 +903,7 @@
 			);
 			projectRoot = "";
 			targets = (
-				E4B69B5A0A3A1756003C02F2 /* opencvExample */,
+				E4B69B5A0A3A1756003C02F2 /* wire-less */,
 			);
 		};
 /* End PBXProject section */
@@ -1248,7 +1225,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		E4B69B4D0A3A1720003C02F2 /* Build configuration list for PBXProject "opencvExample" */ = {
+		E4B69B4D0A3A1720003C02F2 /* Build configuration list for PBXProject "wire-less" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E4B69B4E0A3A1720003C02F2 /* Debug */,
@@ -1257,7 +1234,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		E4B69B5F0A3A1757003C02F2 /* Build configuration list for PBXNativeTarget "opencvExample" */ = {
+		E4B69B5F0A3A1757003C02F2 /* Build configuration list for PBXNativeTarget "wire-less" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E4B69B600A3A1757003C02F2 /* Debug */,
