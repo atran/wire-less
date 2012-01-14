@@ -6,6 +6,10 @@
 void testApp::setup()
 {
 	ofSetLogLevel(OF_LOG_VERBOSE);
+	ofSetFrameRate(30);
+
+    a = 0;
+    alphaPulse = 0;
 	
 	init_keys();
 	debug_depth_texture = true;
@@ -29,6 +33,15 @@ void testApp::setup()
 	
 	far = 162;
 	near = 120;
+	
+	currentLine.p0.x = 1;
+	currentLine.p0.y = 100;
+	currentLine.p1.x = 100;
+	currentLine.p1.y = 100;
+	
+	lines.push_back(currentLine);
+	ofLine(currentLine.p0.x, currentLine.p0.y, currentLine.p1.x, currentLine.p1.y);
+	
 }
 
 void testApp::update()
@@ -41,7 +54,8 @@ void testApp::update()
 }
 
 void testApp::draw()
-{	
+{	    
+	ofEnableAlphaBlending();
 	camluc.render();
 	
 	//glScalef(1, -1, 1);
@@ -102,6 +116,7 @@ void testApp::render_texture(ofEventArgs &args)
 		}
 	}
 	
+	ofScale(1.6, 1.6, 1);
 	contourFinder.findContours(grayImage, 500, (340*240)/1, 5, false);	// find holes
 	
 	for (int i = 0; i < contourFinder.nBlobs; i++){
@@ -130,10 +145,26 @@ void testApp::render_texture(ofEventArgs &args)
 //		ofEllipse(contourFinder.blobs[i].centroid.x, contourFinder.blobs[i].centroid.y, 4, 4);
 //		
 //		ofPopMatrix();
-	
-		ofPolyline polyline = toOf(contourFinder.blobs[i]);
-		ofPolyline smoothed = polyline.getSmoothed(8);
-		smoothed.draw();		
+
+		polyline = toOf(contourFinder.blobs[i]);
+		polyline = polyline.getResampledBySpacing(100);	
+		polyline.setClosed(true);
+		polyline.draw();
+		
+		
+		bool success = true;
+		
+		LineSegment clippedLine = constrainLineToPolygon(&currentLine, &polyline, success);
+		
+		if(success) {
+			ofPushStyle();
+			ofSetLineWidth(6);
+			ofSetColor(0,255,0);
+			clippedLine.draw();
+			ofPopStyle();
+		} 
+		currentLinePoint = 0;
+		
 	}
 	
 	//depthImage.draw(0,h/2,w/2,h);
@@ -146,9 +177,9 @@ void testApp::render_texture(ofEventArgs &args)
 }
 
 ofPolyline testApp::toOf(const ofxCvBlob& blob) {
-	ofPolyline polyline;
-	polyline.addVertexes(blob.pts);
-	return polyline;
+	ofPolyline poly;
+	poly.addVertexes(blob.pts);
+	return poly;
 }
 
 bool testApp::init_kinect()
@@ -264,4 +295,88 @@ void testApp::resized(int w, int h)
 void testApp::debug()
 {
 	
+}
+
+//--------------------------------------------------------------
+LineSegment testApp::constrainLineToPolygon(LineSegment* ls, ofPolyline* poly, bool &success) {
+    
+    success = true; // assume we can do it
+    
+    // this is the default line we will return. it's just a copy of the one we are testing
+    LineSegment theLs = LineSegment(ls->p0,ls->p1);
+	
+    // poly isn't big enough, so just return original line
+    if(poly->size() < 3) {
+        cout << "Poly has less than 3 points, so we can't really intersect." << endl;
+        success = false;
+        return theLs;
+    }
+    
+    // check to see if either end of our line is actually INSIDE the polygon
+    bool p0Inside = poly->inside(ls->p0);
+    bool p1Inside = poly->inside(ls->p1);
+    
+    // get a list of the poly verts
+    vector<ofPoint> verts = poly->getVertices();
+    
+    // create a vector to collect all of the intersections
+    vector<ofPoint> intersections;
+    
+    // imagine the poly as a series of connected line segments (end to end).
+    // cycle through those line segments and and test to see if our line 
+    // intersects with any of them.
+    // when an intersection is located, save it to the array of intersections
+    for(int i = 0; i < verts.size(); i++) {
+        int nextI = i != (verts.size() - 1) ? i + 1 : 0;
+        LineSegment polySegment = LineSegment(verts[i],verts[nextI]);
+        ofVec2f intersection;
+        IntersectResult result = polySegment.Intersect(theLs, intersection);
+        // we are only interested in doing something with intersection points
+        if(result == INTERESECTING) {
+            intersections.push_back(intersection);
+        }
+    }
+    
+    // now that we have found all of the places where our line intersects the polygon
+    // we can figure out what our constrained line should look like.
+    // there are a few pathological cases, which are possible to figure out, but
+    // a bit more difficult.  basically it can happen when a line passes
+    // through a polygon's concavity (generating more than 2 intersections)
+	cout << "number of intersections: " << intersections.size() << endl;
+    if(intersections.size() > 3) {
+        cout << "Found more than three intersection points ... failing b/c of laziness: " << intersections.size() << endl;
+
+        success = false;
+    } else if (intersections.size() == 3) {
+		success = false;
+		
+		if (intersections[0] == intersections[1]) {
+			cout << "matched first and second" << endl;
+			theLs.p0 = intersections[0];
+			theLs.p1 = intersections[2];
+			cout << theLs.p0 << ", " << theLs.p1 << endl;
+			success = true;
+		}
+	} else if(intersections.size() == 2) {
+        theLs.p0 = intersections[0];
+        theLs.p1 = intersections[1];
+        success = true;
+    } else if(intersections.size() == 1) {
+        if(p0Inside) {
+            theLs.p1 = intersections[0];
+            success = true;
+        } else if(p1Inside) {
+            theLs.p0 = intersections[0];
+            success = true;
+        } else {
+            cout << "One intersection was found, but neither are inside ... very curious." << endl;
+            success = false;
+        }
+    } else if (intersections.size() == 0) {
+		success = false;
+	}
+    
+    // return the line, whether modified or not.
+	cout << theLs.p0 << " + " << theLs.p1 << ", " << success << endl;
+    return theLs;
 }

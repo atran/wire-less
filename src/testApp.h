@@ -20,6 +20,7 @@
 #pragma once
 
 #include "ofMain.h"
+#include "LineSegment.h"
 #include "ofxOpenCv.h"
 #include "ofxKinect.h"
 #include "CamaraLucida.h"
@@ -63,6 +64,7 @@ public:
 	ofxCvColorImage colorImg;
 
 	ofPolyline toOf(const ofxCvBlob& blob);
+	
 	// app
 	
 	void setup();
@@ -79,5 +81,19 @@ public:
 	void resized(int w, int h);
 	
 	void debug();
+	
+	LineSegment constrainLineToPolygon(LineSegment* ls, ofPolyline* poly, bool& success);
+	ofPolyline polyline;
+    
+    vector<LineSegment> lines;
+    vector<LineSegment> clippedLines;
+    vector<LineSegment> failedClippedLines;
+    
+    LineSegment currentLine;
+    int currentLinePoint;
+    
+    float a;
+    float alphaPulse;
+	
 	
 };
