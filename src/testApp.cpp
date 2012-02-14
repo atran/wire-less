@@ -6,6 +6,7 @@
 void testApp::setup()
 {
 	ofSetLogLevel(OF_LOG_VERBOSE);
+<<<<<<< Updated upstream
 	ofSetFrameRate(30);
 
     a = 0;
@@ -51,10 +52,50 @@ void testApp::setup()
 	serial.setup("/dev/cu.usbmodemfa131",57600); 
 	radio_on = false;
 	timer = 0;
+=======
+	ofSetFrameRate(60);
+	
+	init_keys();
+    a = 0;
+    pulse=0;
+	contourFinder.setMinAreaRadius(100);
+	contourFinder.setMaxAreaRadius(150);	
+    
+    //imgd.loadImage("tran.png");
+    
+    imgd.allocate(640, 480, OF_IMAGE_GRAYSCALE);
+    colorImg.allocate(640, 480, OF_IMAGE_COLOR);
+	//kinect.init();
+	//kinect.setVerbose(true);
+	//kinect.open();
+    
+	// start with the live kinect source
+	kinectSource = &kinect;
+
+    
+	bRecord = false;
+	bPlayback = true;
+    
+    radio_on = false;
+    startPlayback();
+    
+    //VF.setupField(10,10,ofGetWidth(), ofGetHeight());
+	//VF.randomizeField(1.0);
+	
+	//Set spring and sink values
+    cursorMode = 0 ; 
+    forceRadius = 45 ; 
+    friction = 0.85 ; 
+    springFactor = 0.12 ; 
+    springEnabled = true ;	
+    
+	trailing = 0;
+>>>>>>> Stashed changes
 }
 
 void testApp::update()
 {
+<<<<<<< Updated upstream
 	if (!update_kinect())
 		return;
 	
@@ -219,6 +260,153 @@ void testApp::render_texture(ofEventArgs &args)
 
 	//glColor3f(1, 1, 0);
 	//ofCircle(800, 200, 100);
+=======
+	kinectSource->update();
+    
+    if(kinectSource->isFrameNew()) {
+        
+        a += ofDegToRad(1);
+        cout << a << endl;
+        pulse = (abs(sin(a))) * 100 + 100;
+        // record ?
+		if(bRecord && kinectRecorder.isOpened()) {
+			kinectRecorder.newFrame(kinect.getRawDepthPixels(), kinect.getPixels());
+		}
+		colorImg.setFromPixels(kinectSource->getCalibratedRGBPixels(), 640,480, OF_IMAGE_COLOR);
+		colorImg.update();
+		unsigned char * colorPixels = colorImg.getPixels();
+
+		
+        imgd.setFromPixels(kinectSource->getDepthPixels(), kinect.width, kinect.height, OF_IMAGE_GRAYSCALE);
+		unsigned char * pixels = imgd.getPixels();
+		
+		int numPixels = imgd.getWidth() * imgd.getHeight();
+		for(int i = 0; i < numPixels; i++) {
+			//if(pix[i] < nearThreshold && pix[i] > farThreshold) {
+			//invert
+			if(pixels[i] < 230 && pixels[i] > 100) {
+				pixels[i] = 0;
+			} else {
+				pixels[i] = 255;
+			}
+		}
+		
+		//imgd.flagImageChanged();
+
+		imgd.update();
+		pixels = imgd.getPixels();
+		
+		//if (trailing == 10){
+        if (trailing != -1){
+			particles.clear();
+			trailing = 0;
+			//if the app performs slowly raise this number
+			sampling = 1 ; 
+			
+			//store width and height for optimization and clarity
+			int w = imgd.width ; 
+			int h = imgd.height ; 
+			numParticles = ( imgd.width * imgd.height ) / sampling ; 
+			
+			
+			//offsets to center the particle son screen
+			int xOffset = (ofGetWidth() - w ) /2 ; 
+			int yOffset = (ofGetHeight() - h ) /2 ;
+			
+			//Loop through all the rows
+			for ( int x = 0 ; x < w ; x+=sampling ) 
+			{
+				//Loop through all the columns
+				for ( int y = 0 ; y < h ; y+=sampling ) 
+				{
+					//Pixels are stored as unsigned char ( 0 <-> 255 ) as RGB
+					//If our image had transparency it would be 4 for RGBA
+					int index = ( y * w + x ) ; 
+					int colorIndex = index * 3 ;
+					int grey = pixels[index];
+					
+					ofColor color;
+					color.r = colorPixels[colorIndex] ;       //red pixel
+					color.g = colorPixels[colorIndex+1] ;     //blue pixel
+					color.b = colorPixels[colorIndex+2] ;     //green pixel
+					
+					if (grey < 200) {
+						particles.push_back( Particle ( ofPoint ( x + xOffset , y + yOffset ) , grey, color ) ) ;  
+					}
+				}
+			}
+		} else {
+			trailing++;
+		}
+		
+        
+    }
+	updateParticles();
+}
+
+void testApp::draw()
+{	
+    ofPushMatrix(); 
+    
+    //draws a star
+    //ofSetPolyMode(OF_POLY_WINDING_NONZERO);
+    glBegin(GL_LINE);
+    for (int y=0;y<640;y+=5){
+        ofBeginShape();
+        for (int x=0;x<480*3;x+=3){
+            int pix1 = (y*640*3) + x;
+            int pix2 = (y*640*3) + (x+1);
+            int pix3 = (y*640*3) + (x+2);
+            glColor3f(pix1,pix2,pix3);
+            glVertex3f(x*2,y*2, 1);
+        }
+        ofEndShape();
+    }
+    glEnd();
+    ofPopMatrix();
+    
+//    cout << pulse << endl;
+//    ofTranslate(10,100,pulse);
+//    
+//    glClearColor(0, 0, 0, 1);
+//	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//    
+//	//Begin the openGL Drawing Mode
+//    glBegin(GL_POINTS);
+//
+//    //Triangles look Cool too 
+//    //glBegin(GL_TRIANGLES);
+//	
+//    //glBegin(GL_LINE_LOOP);
+//
+//    //Create an iterator to cycle through the vector
+//    std::vector<Particle>::iterator p ; 
+//    for ( p = particles.begin() ; p != particles.end() ; p++ )
+//    {
+//        //glColor3ub((unsigned char)p->grey,(unsigned char)p->grey,(unsigned char)p->grey);
+//        //glColor3ub((unsigned char)p->color.r,(unsigned char)p->color.g,(unsigned char)p->color.b);
+//		glColor4ub((unsigned char)p->color.r,(unsigned char)p->color.g,(unsigned char)p->color.b,(unsigned char)p->grey);
+//        glVertex3f(p->position.x, p->position.y , 0 );
+//    }
+//    
+//    glEnd();
+//    ofPopMatrix();  
+//
+    
+    ofSetColor ( 255 , 255 , 255 ) ;
+    
+    string output = "S :: Springs on/off : " + ofToString(springEnabled) +
+    
+    "\n C :: CursorMode repel/attract " + ofToString( cursorMode ) +
+    
+    "\n # of particles : " + ofToString( numParticles ) +
+    
+    " \n fps:" +ofToString( ofGetFrameRate() ) ;
+    
+    ofDrawBitmapString(output ,20,666);
+	imgd.draw(0,0,100,150);
+
+>>>>>>> Stashed changes
 }
 
 ofPolyline testApp::toOf(const ofxCvBlob& blob) {
@@ -400,6 +588,7 @@ LineSegment testApp::constrainLineToPolygon(LineSegment* ls, ofPolyline* poly, b
     if(intersections.size() > 3) {
         // cout << "Found more than three intersection points ... failing b/c of laziness: " << intersections.size() << endl;
 
+<<<<<<< Updated upstream
         success = false;
     } else if (intersections.size() == 3) {
 		success = false;
@@ -432,3 +621,52 @@ LineSegment testApp::constrainLineToPolygon(LineSegment* ls, ofPolyline* poly, b
     // return the line, whether modified or not.
     return theLs;
 }
+=======
+//--------------------------------------------------------------
+void testApp::stopPlayback() {
+    kinectPlayer.close();
+    kinect.open();
+    kinectSource = &kinect;
+    bPlayback = false;
+}
+
+void testApp::updateParticles() {
+	ofPoint diff ;          //Difference between particle and mouse
+    float dist ;            //distance from particle to mouse ( as the crow flies ) 
+    float ratio ;           //Ratio of how strong the effect is = 1 + (-dist/maxDistance) ;
+    const ofPoint mousePosition = ofPoint( mouseX , mouseY ) ; //Allocate and retrieve mouse values once.
+	
+    
+    //Create an iterator to cycle through the vector
+    std::vector<Particle>::iterator p ; 
+    for ( p = particles.begin() ; p != particles.end() ; p++ ) 
+    {
+        ratio = 1.0f ; 
+        p->velocity *= friction ; 
+        //reset acceleration every frame
+        p->acceleration = ofPoint() ; 
+        diff = mousePosition - p->position ;  
+        dist = ofDist( 0 , 0 , diff.x , diff.y ) ;
+        //If within the zone of interaction
+        if ( dist < forceRadius )  
+        {
+            ratio = -1 + dist / forceRadius ; 
+            //Repulsion
+            if ( cursorMode == 0 ) 
+                p->acceleration -= ( diff * ratio) ;
+            //Attraction
+            else
+                p->acceleration += ( diff * ratio ) ; 
+        }
+        if ( springEnabled ) 
+        {
+            //Move back to the original position
+            p->acceleration.x += springFactor * (p->spawnPoint.x - p->position.x);
+            p->acceleration.y += springFactor * (p->spawnPoint.y - p->position.y) ;
+        }
+        
+        p->velocity += p->acceleration * ratio ; 
+        p->position += p->velocity ; 
+    }
+}
+>>>>>>> Stashed changes

@@ -23,9 +23,39 @@
 #include "LineSegment.h"
 #include "ofxOpenCv.h"
 #include "ofxKinect.h"
+<<<<<<< Updated upstream
 #include "CamaraLucida.h"
 #include "cmlMesh_freenect.h"
 #include <GLUT/glut.h>
+=======
+#include "Particle.h"
+
+
+
+
+// ------------------------------------------------- a simple extended box2d circle
+class CustomParticle : public ofxBox2dCircle {
+	
+public:
+	CustomParticle() {
+	}
+	ofColor color;
+	void draw() {
+		float radius = getRadius();
+		
+		glPushMatrix();
+		glTranslatef(getPosition().x, getPosition().y, 0);
+		
+		ofSetColor(color.r, color.g, color.b);
+		ofFill();
+		ofCircle(0, 0, radius);	
+		
+		glPopMatrix();
+		
+	}
+};
+
+>>>>>>> Stashed changes
 
 class testApp : public ofBaseApp 
 {
@@ -59,10 +89,17 @@ public:
 	int			rf;
 	int			timer;
 
+<<<<<<< Updated upstream
+=======
+	int trailing;
+	
+    bool radio_on;
+>>>>>>> Stashed changes
 	//	ui
 	
 	bool pressed[512];
 	void init_keys();
+<<<<<<< Updated upstream
 	
 	// analysis
 	ofxCvContourFinder 	contourFinder;
@@ -70,6 +107,55 @@ public:
 	ofxCvGrayscaleImage grayImage;
 	ofxCvGrayscaleImage depthImage;
 	ofxCvGrayscaleImage pastDepth;
+=======
+   
+    ofImage imgd;
+    ofImage colorImg;
+    
+	// analysis
+    ofxCv::ContourFinder contourFinder;
+    float threshold;
+    float a;
+    float pulse;
+    
+    //ofxBox2d
+    ofxBox2d						box2d;			  //	the box2d world
+	ofxBox2dPolygon					polyLine;		  //	the box2d polygon/line shape
+	ofPolyline						drawing;		  //	we draw with this first
+
+    vector		<CustomParticle>	circles;		  //	custom box2d circles
+	
+    vectorField VF;
+    
+    ofxKinect 			kinect;
+    ofxKinectRecorder 	kinectRecorder;
+    ofxKinectPlayer 	kinectPlayer;
+    int 				nearThreshold;
+    int					farThreshold;
+    ofxBase3DVideo* 	kinectSource;
+    bool 				bRecord;
+    bool 				bPlayback;
+    
+    /// start/stop recording and playback,
+    /// make sure you don't record and playback simultaneously 
+    /// using the same file!!!
+    void startRecording();
+    void stopRecording();
+    void startPlayback();
+    void stopPlayback();
+	
+	int sampling ;                  //pixels to skip
+	vector<Particle> particles ;    //vector to store pixels
+	int numParticles ;          //Number of particles 
+	
+	//Spring and Sink Factors
+	bool springEnabled ;        //toggle whether particles return to their origin
+	float forceRadius ;             //radius of repellent/attraction force
+	float friction ;                //damping to slow the particles down
+	float springFactor ;          //how much the particle "springs" back to origin
+	int cursorMode ;            
+    
+>>>>>>> Stashed changes
 
 	ofxCvColorImage colorImg;
 
@@ -92,6 +178,7 @@ public:
 	
 	void debug();
 	
+<<<<<<< Updated upstream
 	LineSegment constrainLineToPolygon(LineSegment* ls, ofPolyline* poly, bool& success);
 	ofPolyline polyline;
     
@@ -106,4 +193,8 @@ public:
     float alphaPulse;
 	
 	
+=======
+	void updateParticles();
+
+>>>>>>> Stashed changes
 };
