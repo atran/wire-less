@@ -133,12 +133,12 @@ void testApp::render_texture(ofEventArgs &args)
 	}
 
 	//depthImage.draw(0,h/2,w/2,h);
-	grayImage.draw(0,0,w,h);
+	//grayImage.draw(0,0,w,h);
 	//kinect.getDepthTextureReference().draw(w/2, h/2, w/2+400, h/2+300);	
 	//contourFinder.draw(0, 0, w, h);
 
 	//glColor3f(1, 1, 0);
-	//ofCircle(800, 200, 100);
+	ofCircle(800, 200, 100);
 }
 
 bool testApp::init_kinect()

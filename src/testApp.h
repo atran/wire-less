@@ -28,6 +28,8 @@
 #include "cmlMesh_freenect.h"
 #include <GLUT/glut.h>
 
+#include "Particle.h"
+
 class testApp : public ofBaseApp 
 {
 public:
@@ -71,6 +73,11 @@ public:
 	ofxCvGrayscaleImage depthImage;
 	ofxCvGrayscaleImage pastDepth;
 	ofxCvColorImage colorImg;
+    
+    //particles
+    int sampling;
+    vector<Particle> particles;
+    int numParticles;
 
 	// app
 	
