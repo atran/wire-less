@@ -78,6 +78,13 @@ public:
     int sampling;
     vector<Particle> particles;
     int numParticles;
+    
+    //particle engine
+    int cursorMode; 
+    float forceRadius; 
+    float friction; 
+    float springFactor; 
+    bool springEnabled;
 
 	// app
 	
@@ -95,5 +102,7 @@ public:
 	void resized(int w, int h);
 	
 	void debug();
+    
+    void updateParticles();
 	
 };

@@ -57,18 +57,69 @@ void testApp::update()
 	}
 	
 	
-	if (timer > 0) {
-		timer--;
-	} else {
-		if (rf > 194) { 
-			radio_on = true;
-			//start 3 second timer
-			timer = 90;
+//	if (timer > 0) {
+//		timer--;
+//	} else {
+//		if (rf > 194) { 
+//			radio_on = true;
+//			//start 3 second timer
+//			timer = 90;
+//		}
+//		else if (rf < 194) {
+//			radio_on = false;
+//		}		
+//	}
+    
+    // create a depth grayscale image, grab the pixels
+	grayImage.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
+	unsigned char * pix = grayImage.getPixels();
+	int numPixels = grayImage.getWidth() * grayImage.getHeight()-1;
+	unsigned char * colorPixels = colorImg.getPixels();
+    
+	// binarize depth grayscale image
+	for (int i = numPixels; i > 0; i--){
+		if (pix[i] > near && pix[i] < far) {
+			pix[i] = 255;
+		} else {
+			pix[i] = 0;
 		}
-		else if (rf < 194) {
-			radio_on = false;
-		}		
 	}
+
+    grayImage.flagImageChanged();
+    
+    particles.clear();
+    sampling = 1;
+    int w = grayImage.width;
+    int h = grayImage.height;
+    numParticles = w*h/sampling;
+    
+    
+    //offsets to center the particle son screen
+    int xOffset = (ofGetWidth() - w ) /2 ; 
+    int yOffset = (ofGetHeight() - h ) /2 ;
+    //Loop through all the rows
+    for ( int x = 0 ; x < w ; x+=sampling ) 
+    {
+        //Loop through all the columns
+        for ( int y = 0 ; y < h ; y+=sampling ) 
+        {
+            //Pixels are stored as unsigned char ( 0 <-> 255 ) as RGB
+            //If our image had transparency it would be 4 for RGBA
+            int index = ( y * w + x ) ; 
+            int colorIndex = index * 3 ;
+            int grey = pix[index];
+            
+            ofColor color;
+            color.r = colorPixels[colorIndex] ;       //red pixel
+            color.g = colorPixels[colorIndex+1] ;     //blue pixel
+            color.b = colorPixels[colorIndex+2] ;     //green pixel
+            
+            particles.push_back( Particle ( ofPoint ( x + xOffset , y + yOffset ) , grey, color ) ) ;  
+            
+        }
+    }
+
+    updateParticles();
 }
 
 void testApp::draw()
@@ -118,20 +169,19 @@ void testApp::render_texture(ofEventArgs &args)
 	
 	glColor3f(1, 1, 1);
 	
-	// create a depth grayscale image, grab the pixels
-	grayImage.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
-	unsigned char * pix = grayImage.getPixels();
-	int numPixels = grayImage.getWidth() * grayImage.getHeight()-1;
-	
-	// binarize depth grayscale image
-	for (int i = numPixels; i > 0; i--){
-		if (pix[i] > near && pix[i] < far) {
-			pix[i] = 255;
-		} else {
-			pix[i] = 0;
-		}
-	}
-
+    //glBegin(GL_POINTS);    
+    std::vector<Particle>::iterator p;
+//    for (p = particles.begin();p!=particles.end();p++){
+//        glColor3ub((unsigned char)p->color.r,(unsigned char)p->color.g,(unsigned char)p->color.b);
+//        glVertex3f(p->position.x, p->position.y , 0 );
+//    }
+    //glEnd();
+    
+    for (p = particles.begin();p!=particles.end();p++){
+        ofColor(p->color);
+        ofCircle(p->position.x, p->position.y, 1);
+    }
+    
 	//depthImage.draw(0,h/2,w/2,h);
 	//grayImage.draw(0,0,w,h);
 	//kinect.getDepthTextureReference().draw(w/2, h/2, w/2+400, h/2+300);	
@@ -165,6 +215,47 @@ bool testApp::update_kinect()
 	
 	return true;
 }
+
+void testApp::updateParticles() {
+	ofPoint diff ;          //Difference between particle and mouse
+    float dist ;            //distance from particle to mouse ( as the crow flies ) 
+    float ratio ;           //Ratio of how strong the effect is = 1 + (-dist/maxDistance) ;
+    const ofPoint mousePosition = ofPoint( mouseX , mouseY ) ; //Allocate and retrieve mouse values once.
+    
+    
+    //Create an iterator to cycle through the vector
+    std::vector<Particle>::iterator p ; 
+    for ( p = particles.begin() ; p != particles.end() ; p++ ) 
+    {
+        ratio = 1.0f ; 
+        p->velocity *= friction ; 
+        //reset acceleration every frame
+        p->acceleration = ofPoint() ; 
+        diff = mousePosition - p->position ;  
+        dist = ofDist( 0 , 0 , diff.x , diff.y ) ;
+        //If within the zone of interaction
+        if ( dist < forceRadius )  
+        {
+            ratio = -1 + dist / forceRadius ; 
+            //Repulsion
+            if ( cursorMode == 0 ) 
+                p->acceleration -= ( diff * ratio) ;
+            //Attraction
+            else
+                p->acceleration += ( diff * ratio ) ; 
+        }
+        if ( springEnabled ) 
+        {
+            //Move back to the original position
+            p->acceleration.x += springFactor * (p->spawnPoint.x - p->position.x);
+            p->acceleration.y += springFactor * (p->spawnPoint.y - p->position.y) ;
+        }
+        
+        p->velocity += p->acceleration * ratio ; 
+        p->position += p->velocity ; 
+    }
+}
+
 
 void testApp::keyPressed(int key)
 {

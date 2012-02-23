@@ -20,6 +20,6 @@ class Particle
     ofPoint spawnPoint;
     char depth;
     ofColor color;
-}
+};
 
 #endif
