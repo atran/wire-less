@@ -5,7 +5,7 @@
 
 void testApp::setup()
 {
-	ofSetLogLevel(OF_LOG_VERBOSE);
+	//ofSetLogLevel(OF_LOG_VERBOSE);
 	ofSetFrameRate(30);
 	
 	init_keys();
@@ -19,6 +19,11 @@ void testApp::setup()
 	if (!init_kinect())
 		return;
 	
+    
+	tex_width = 1024;
+	tex_height = 768;
+    debug_hue_texture = true;
+    
 	mesh = new cml::Mesh_freenect(raw_depth_pix);
 	
 	camluc.init(ofToDataPath("camara_lucida/kinect_calibration.yml"),
@@ -34,9 +39,13 @@ void testApp::setup()
 	near = 85;
 		
 	//serial
-	serial.listDevices();
-	vector <ofSerialDeviceInfo> deviceList = serial.getDeviceList();
-	serial.setup("/dev/cu.usbmodemfa131",57600); 
+	//serial.listDevices();
+	//vector <ofSerialDeviceInfo> deviceList = serial.getDeviceList();
+	//serial.setup("/dev/cu.usbmodemfa131",57600); 
+    cursorMode = 0 ; 
+    forceRadius = 45 ; 
+    friction = 0.85 ; 
+    springFactor = 0.12 ;
 }
 
 void testApp::update()
@@ -47,14 +56,14 @@ void testApp::update()
 	if (kinect.isFrameNew())
 		camluc.update();
 		
-	if(serial.available() > 1){ 
-		
-		unsigned char bytesReturned[4];      
-		serial.readBytes(bytesReturned, 4); 
-		string serialData = (char*) bytesReturned; // cast to char  
-		int rf_holder = ofToInt(serialData);
-		if (rf_holder != 0) rf = rf_holder;
-	}
+//	if(serial.available() > 1){ 
+//		
+//		unsigned char bytesReturned[4];      
+//		serial.readBytes(bytesReturned, 4); 
+//		string serialData = (char*) bytesReturned; // cast to char  
+//		int rf_holder = ofToInt(serialData);
+//		if (rf_holder != 0) rf = rf_holder;
+//	}
 	
 	
 //	if (timer > 0) {
@@ -77,18 +86,11 @@ void testApp::update()
 	unsigned char * colorPixels = colorImg.getPixels();
     
 	// binarize depth grayscale image
-	for (int i = numPixels; i > 0; i--){
-		if (pix[i] > near && pix[i] < far) {
-			pix[i] = 255;
-		} else {
-			pix[i] = 0;
-		}
-	}
 
     grayImage.flagImageChanged();
     
     particles.clear();
-    sampling = 1;
+    sampling = 2;
     int w = grayImage.width;
     int h = grayImage.height;
     numParticles = w*h/sampling;
@@ -114,7 +116,9 @@ void testApp::update()
             color.g = colorPixels[colorIndex+1] ;     //blue pixel
             color.b = colorPixels[colorIndex+2] ;     //green pixel
             
-            particles.push_back( Particle ( ofPoint ( x + xOffset , y + yOffset ) , grey, color ) ) ;  
+            if (grey < far && grey > near){
+                particles.push_back( Particle ( ofPoint ( x + xOffset , y + yOffset ) , grey, color ) ) ;
+            }
             
         }
     }
@@ -127,9 +131,9 @@ void testApp::draw()
 	ofEnableAlphaBlending();
 	camluc.render();
 	
-	//glScalef(1, -1, 1);
-	//glTranslatef(-0.3, 0.3, 1);
-	//glutWireTeapot(0.1);
+	glScalef(1, -1, 1);
+	glTranslatef(-0.3, 0.3, 1);
+	glutWireTeapot(0.1);
 }
 
 void testApp::exit()
@@ -166,37 +170,48 @@ void testApp::render_texture(ofEventArgs &args)
 	glOrtho(0, w, 0, h, -1, 1);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	
-	glColor3f(1, 1, 1);
-	
-    //glBegin(GL_POINTS);    
-    std::vector<Particle>::iterator p;
-//    for (p = particles.begin();p!=particles.end();p++){
-//        glColor3ub((unsigned char)p->color.r,(unsigned char)p->color.g,(unsigned char)p->color.b);
-//        glVertex3f(p->position.x, p->position.y , 0 );
-//    }
-    //glEnd();
     
-    for (p = particles.begin();p!=particles.end();p++){
-        ofColor(p->color);
-        ofCircle(p->position.x, p->position.y, 1);
+    if (debug_hue_texture) {
+        mesh->debug_hue_texture(0, 0, tex_width, tex_height);  
     }
+    else {
+
+
+        glColor3f(1, 1, 1);
+
+        //glBegin(GL_POINTS);    
+        std::vector<Particle>::iterator p;
+        for (p = particles.begin();p!=particles.end();p++){
+//            glColor4ub((unsigned char)p->color.r,(unsigned char)p->color.g,(unsigned char)p->color.b,(unsigned char)p->depth);
+//            glVertex3f(p->position.x, p->position.y , 0 );
+            ofColor(255,0,0);
+            int x = (p->position.x) + ofRandom(-1,1);
+            int y = (p->position.y) + ofRandom(-1,1);
+            ofCircle(x, y, 0.5);
+        }
+        //glEnd();
+        
+//      glColor3f(1, 1, 1);
+//		kinect.getDepthTextureReference().draw(0, 0, tex_width, tex_height);
+
+    }
+
     
 	//depthImage.draw(0,h/2,w/2,h);
 	//grayImage.draw(0,0,w,h);
 	//kinect.getDepthTextureReference().draw(w/2, h/2, w/2+400, h/2+300);	
 	//contourFinder.draw(0, 0, w, h);
 
-	//glColor3f(1, 1, 0);
+	glColor3f(1, 1, 0);
 	ofCircle(800, 200, 100);
 }
 
 bool testApp::init_kinect()
 {
 	//kinect.enableCalibrationUpdate(false);
-	kinect.enableDepthNearValueWhite(false);
+	//kinect.enableDepthNearValueWhite(false);
 	
-	kinect.init(false, true, true);
+	kinect.init();
 	kinect.open();
 	//	ktilt = 0;
 	//	kinect.setCameraTiltAngle(ktilt);
@@ -313,6 +328,10 @@ void testApp::keyPressed(int key)
 	if (key =='r') {
 		radio_on = true;
 	}
+    if (key == 'a') {
+        debug_hue_texture = !debug_hue_texture;
+        cout << "debug? " << debug_hue_texture << endl;
+    }
 }
 
 void testApp::keyReleased(int key)

@@ -41,6 +41,8 @@ public:
 	void render_hud(ofEventArgs &args);
 	
 	bool debug_depth_texture;
+    bool debug_hue_texture;
+
 	
 	
 	//	kinect
@@ -51,6 +53,10 @@ public:
 	
 	bool init_kinect();
 	bool update_kinect();
+    
+    
+	float tex_width;
+	float tex_height;
 	
 	// threshold
 	int far;
