@@ -90,7 +90,7 @@ void testApp::update()
     grayImage.flagImageChanged();
     
     particles.clear();
-    sampling = 2;
+    sampling = 1;
     int w = grayImage.width;
     int h = grayImage.height;
     numParticles = w*h/sampling;
@@ -107,15 +107,11 @@ void testApp::update()
         {
             //Pixels are stored as unsigned char ( 0 <-> 255 ) as RGB
             //If our image had transparency it would be 4 for RGBA
-            int index = ( y * w + x ) ; 
-            int colorIndex = index * 3 ;
+            int index = ( y * w + x );
             int grey = pix[index];
             
             ofColor color;
-            color.r = colorPixels[colorIndex] ;       //red pixel
-            color.g = colorPixels[colorIndex+1] ;     //blue pixel
-            color.b = colorPixels[colorIndex+2] ;     //green pixel
-            
+            color = kinect.getCalibratedColorAt(x,y);
             if (grey < far && grey > near){
                 particles.push_back( Particle ( ofPoint ( x + xOffset , y + yOffset ) , grey, color ) ) ;
             }
@@ -179,17 +175,20 @@ void testApp::render_texture(ofEventArgs &args)
 
         glColor3f(1, 1, 1);
 
-        //glBegin(GL_POINTS);    
+        glBegin(GL_POINTS);    
         std::vector<Particle>::iterator p;
         for (p = particles.begin();p!=particles.end();p++){
 //            glColor4ub((unsigned char)p->color.r,(unsigned char)p->color.g,(unsigned char)p->color.b,(unsigned char)p->depth);
 //            glVertex3f(p->position.x, p->position.y , 0 );
-            ofColor(255,0,0);
+            
+            //ofColor(p->color);
             int x = (p->position.x) + ofRandom(-1,1);
             int y = (p->position.y) + ofRandom(-1,1);
-            ofCircle(x, y, 0.5);
+            glColor3ub((unsigned char)p->color.r,(unsigned char)p->color.g,(unsigned char)p->color.b);
+            glVertex3f(x,y,0);
+            //ofCircle(x, y, 0.5);
         }
-        //glEnd();
+        glEnd();
         
 //      glColor3f(1, 1, 1);
 //		kinect.getDepthTextureReference().draw(0, 0, tex_width, tex_height);
