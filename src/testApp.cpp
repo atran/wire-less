@@ -35,8 +35,8 @@ void testApp::setup()
 	ofAddListener(camluc.render_hud, this, &testApp::render_hud);
 		
 	//thresholds
-	far = 85;
-	near = 189;
+	far = 0;
+	near = 254;
 		
 	//serial
 	//serial.listDevices();
