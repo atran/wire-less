@@ -108,7 +108,7 @@ public:
 	void resized(int w, int h);
 	
 	void debug();
-    
+    void createParticles(int _sampling);
     void updateParticles();
 	
 };

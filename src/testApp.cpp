@@ -35,8 +35,8 @@ void testApp::setup()
 	ofAddListener(camluc.render_hud, this, &testApp::render_hud);
 		
 	//thresholds
-	far = 189;
-	near = 85;
+	far = 85;
+	near = 189;
 		
 	//serial
 	//serial.listDevices();
@@ -46,6 +46,8 @@ void testApp::setup()
     forceRadius = 45 ; 
     friction = 0.85 ; 
     springFactor = 0.12 ;
+    
+    radio_on = false;
 }
 
 void testApp::update()
@@ -78,19 +80,33 @@ void testApp::update()
 //			radio_on = false;
 //		}		
 //	}
-    
+        
     // create a depth grayscale image, grab the pixels
 	grayImage.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
-	unsigned char * pix = grayImage.getPixels();
-	int numPixels = grayImage.getWidth() * grayImage.getHeight()-1;
-	unsigned char * colorPixels = colorImg.getPixels();
+
     
 	// binarize depth grayscale image
 
     grayImage.flagImageChanged();
     
+    if (!radio_on){
+        createParticles(2);
+    } else if (radio_on && ofGetFrameNum() % 200 == 0){
+        createParticles(5);
+    }
+    
+    updateParticles();
+}
+
+void testApp::createParticles(int _sampling)
+{
+    unsigned char * pix = grayImage.getPixels();
+	int numPixels = grayImage.getWidth() * grayImage.getHeight()-1;
+	unsigned char * colorPixels = colorImg.getPixels();
+    
+    
     particles.clear();
-    sampling = 1;
+    sampling = _sampling;
     int w = grayImage.width;
     int h = grayImage.height;
     numParticles = w*h/sampling;
@@ -112,14 +128,13 @@ void testApp::update()
             
             ofColor color;
             color = kinect.getCalibratedColorAt(x,y);
-            if (grey < far && grey > near){
+            if (grey < near && grey > far){
                 particles.push_back( Particle ( ofPoint ( x + xOffset , y + yOffset ) , grey, color ) ) ;
             }
             
         }
     }
 
-    updateParticles();
 }
 
 void testApp::draw()
@@ -148,7 +163,6 @@ void testApp::exit()
 
 void testApp::render_hud(ofEventArgs &args)
 {
-	//ofDrawBitmapString("press 'o' to debug camera as a texture \n 'd' to toggle camara lucida debug, then use 'v' to change viewpoint between camera and projector \n mousedrag to rotate, 'z'+mousedrag to zoom, 'x' to reset the debug transformations \n and 'c'+keyup/down to change depth xoffset", 10, 10);
 
 }
 
@@ -170,27 +184,38 @@ void testApp::render_texture(ofEventArgs &args)
     if (debug_hue_texture) {
         mesh->debug_hue_texture(0, 0, tex_width, tex_height);  
     }
+    
+    
     else {
-
-
-        glColor3f(1, 1, 1);
-
-        glBegin(GL_POINTS);    
         std::vector<Particle>::iterator p;
-        for (p = particles.begin();p!=particles.end();p++){
-//            glColor4ub((unsigned char)p->color.r,(unsigned char)p->color.g,(unsigned char)p->color.b,(unsigned char)p->depth);
-//            glVertex3f(p->position.x, p->position.y , 0 );
-            
-            //ofColor(p->color);
-            int x = (p->position.x) + ofRandom(-1,1);
-            int y = (p->position.y) + ofRandom(-1,1);
-            glColor3ub((unsigned char)p->color.r,(unsigned char)p->color.g,(unsigned char)p->color.b);
-            glVertex3f(x,y,0);
-            //ofCircle(x, y, 0.5);
+        glColor3f(1, 1, 1);
+        
+        glBegin(GL_POINTS); 
+        
+        if (!radio_on) {
+            for (p = particles.begin();p!=particles.end();p++){
+                int x = (p->position.x) + ofRandom(-1,1);
+                int y = (p->position.y) + ofRandom(-1,1);
+                glColor3ub(255,255,255);
+//                glColor3ub((unsigned char)p->color.r,(unsigned char)p->color.g,(unsigned char)p->color.b);
+                glVertex3f(x,y,0);
+            }
+        } else if (radio_on) {
+            for ( p = particles.begin() ; p != particles.end() ; p++ )
+            {
+                if (ofGetFrameNum() % 200 >= 0 && ofGetFrameNum() % 200 < 10){
+                    glColor3ub(255,255,255);
+                }
+                else {
+                    glColor3ub((unsigned char)p->color.r,(unsigned char)p->color.g,(unsigned char)p->color.b);
+                }
+                glVertex3f(p->position.x, p->position.y , 0 );
+            }
         }
+        
         glEnd();
         
-//      glColor3f(1, 1, 1);
+        
 //		kinect.getDepthTextureReference().draw(0, 0, tex_width, tex_height);
 
     }
@@ -225,7 +250,6 @@ bool testApp::update_kinect()
 	
 	kinect.update();
 	raw_depth_pix = kinect.getRawDepthPixels();
-	//orgb_pix = kinect.getPixels();
 	
 	return true;
 }
@@ -274,35 +298,26 @@ void testApp::updateParticles() {
 void testApp::keyPressed(int key)
 {
 	pressed[key] = true;
-	
-	switch (key)
-	{		
-		case 'm':
-			if (ofGetWindowPositionX() == 0)
-			{
-				ofSetWindowPosition(1440,0);
-				ofSetFullscreen(true);
-			}
-			else
-			{
-				ofSetWindowPosition(0,0);
-				ofSetFullscreen(false);
-			}
-			break;		
-			
-		//case 'o':
-			//debug_depth_texture = !debug_depth_texture;
-			//kinect.toggleCalibrationUpdate();
-			//break;
-	}
-	
+    
+    if (key == 'm'){
+        mesh->print();
+    }
 	if (key == 'd')
 	{
 		camluc.toggle_debug();
 	}
 	if (key == 'f')
 	{
-		mesh->print();
+        if (ofGetWindowPositionX() == 0)
+        {
+            ofSetWindowPosition(1440,0);
+            ofSetFullscreen(true);
+        }
+        else
+        {
+            ofSetWindowPosition(0,0);
+            ofSetFullscreen(false);
+        }
 	}
 	if (key == 't') 
 	{
@@ -325,11 +340,12 @@ void testApp::keyPressed(int key)
 		cout << "near: " << near << endl;
 	}
 	if (key =='r') {
-		radio_on = true;
+		radio_on = !radio_on;
 	}
     if (key == 'a') {
         debug_hue_texture = !debug_hue_texture;
         cout << "debug? " << debug_hue_texture << endl;
+        //kinect.toggleCalibrationUpdate();
     }
 }
 
