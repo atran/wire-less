@@ -3,255 +3,269 @@
 
 #include "testApp.h"
 
+using namespace ofxCv;
+using namespace cv;
+
 void testApp::setup()
 {
-	//ofSetLogLevel(OF_LOG_VERBOSE);
+	ofSetLogLevel(OF_LOG_VERBOSE);
 	ofSetFrameRate(30);
 	
 	init_keys();
-	debug_depth_texture = true;
-	
-	grayImage.allocate(kinect.getWidth(), kinect.getHeight());
-	depthImage.allocate(kinect.getWidth(), kinect.getHeight());
-	colorImg.allocate(kinect.getWidth(), kinect.getHeight());
-	pastDepth.allocate(kinect.getWidth(), kinect.getHeight());
-	
-	if (!init_kinect())
-		return;
-	
     
-	tex_width = 1024;
-	tex_height = 768;
-    debug_hue_texture = true;
+	contourFinder.setMinAreaRadius(100);
+	contourFinder.setMaxAreaRadius(150);	
     
-	mesh = new cml::Mesh_freenect(raw_depth_pix);
-	
-	camluc.init(ofToDataPath("camara_lucida/kinect_calibration.yml"),
-				ofToDataPath("camara_lucida/projector_calibration.yml"),
-				ofToDataPath("camara_lucida/camara_lucida_config.xml"),
-				mesh, ofGetWidth(), ofGetHeight(), 1);
-	
-	ofAddListener(camluc.render_texture, this, &testApp::render_texture);
-	ofAddListener(camluc.render_hud, this, &testApp::render_hud);
-		
-	//thresholds
-	far = 0;
-	near = 254;
-		
-	//serial
-	//serial.listDevices();
-	//vector <ofSerialDeviceInfo> deviceList = serial.getDeviceList();
-	//serial.setup("/dev/cu.usbmodemfa131",57600); 
+    //imgd.loadImage("tran.png");
+    
+    imgd.allocate(640, 480, OF_IMAGE_GRAYSCALE);
+    
+	//kinect.init();
+	//kinect.setVerbose(true);
+	//kinect.open();
+    
+	// start with the live kinect source
+	kinectSource = &kinect;
+    startPlayback();
+
+    
+	bRecord = false;
+	bPlayback = false;
+    
+    VF.setupField(10,10,ofGetWidth(), ofGetHeight());
+	//VF.randomizeField(1.0);
+    
     cursorMode = 0 ; 
     forceRadius = 45 ; 
     friction = 0.85 ; 
-    springFactor = 0.12 ;
+    springFactor = 0.12 ; 
+    springEnabled = true ;	
     
-    radio_on = false;
 }
 
 void testApp::update()
 {
-	if (!update_kinect())
-		return;
-	
-	if (kinect.isFrameNew())
-		camluc.update();
-		
-//	if(serial.available() > 1){ 
-//		
-//		unsigned char bytesReturned[4];      
-//		serial.readBytes(bytesReturned, 4); 
-//		string serialData = (char*) bytesReturned; // cast to char  
-//		int rf_holder = ofToInt(serialData);
-//		if (rf_holder != 0) rf = rf_holder;
-//	}
-	
-	
-//	if (timer > 0) {
-//		timer--;
-//	} else {
-//		if (rf > 194) { 
-//			radio_on = true;
-//			//start 3 second timer
-//			timer = 90;
-//		}
-//		else if (rf < 194) {
-//			radio_on = false;
-//		}		
-//	}
+    kinectSource->update();
         
-    // create a depth grayscale image, grab the pixels
-	grayImage.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
-
-    
-	// binarize depth grayscale image
-
-    grayImage.flagImageChanged();
-    
-    if (!radio_on){
-        createParticles(2);
-    } else if (radio_on && ofGetFrameNum() % 200 == 0){
-        createParticles(5);
-    }
-    
-    updateParticles();
-}
-
-void testApp::createParticles(int _sampling)
-{
-    unsigned char * pix = grayImage.getPixels();
-	int numPixels = grayImage.getWidth() * grayImage.getHeight()-1;
-	unsigned char * colorPixels = colorImg.getPixels();
-    
-    
-    particles.clear();
-    sampling = _sampling;
-    int w = grayImage.width;
-    int h = grayImage.height;
-    numParticles = w*h/sampling;
-    
-    
-    //offsets to center the particle son screen
-    int xOffset = (ofGetWidth() - w ) /2 ; 
-    int yOffset = (ofGetHeight() - h ) /2 ;
-    //Loop through all the rows
-    for ( int x = 0 ; x < w ; x+=sampling ) 
-    {
-        //Loop through all the columns
-        for ( int y = 0 ; y < h ; y+=sampling ) 
-        {
-            //Pixels are stored as unsigned char ( 0 <-> 255 ) as RGB
-            //If our image had transparency it would be 4 for RGBA
-            int index = ( y * w + x );
-            int grey = pix[index];
+    if(kinectSource->isFrameNew()) {
+        
+        a += ofDegToRad(1);
+        // record ?
+		colorImg.setFromPixels(kinectSource->getCalibratedRGBPixels(), 640,480, OF_IMAGE_COLOR);
+		colorImg.update();
+		unsigned char * colorPixels = colorImg.getPixels();
+        
+        
+        imgd.setFromPixels(kinectSource->getDepthPixels(), kinect.width, kinect.height, OF_IMAGE_GRAYSCALE);
+		unsigned char * pixels = imgd.getPixels();
+        
+		int numPixels = imgd.getWidth() * imgd.getHeight();
+//		for(int i = 0; i < numPixels; i++) {
+//			//if(pix[i] < nearThreshold && pix[i] > farThreshold) {
+//			//invert
+//			if(pixels[i] < 230 && pixels[i] > 44) {
+//			} else {
+//				pixels[i] = 0;
+//			}
+//		}
+        
+		//imgd.flagImageChanged();
+        
+		imgd.update();
+		pixels = imgd.getPixels();
+        
+		if (trailing == 10){
+        //if (trailing == 100){
+			particles.clear();
+			trailing = 0;
+			//if the app performs slowly raise this number
+			sampling = 1; 
             
-            ofColor color;
-            color = kinect.getCalibratedColorAt(x,y);
-            if (grey < near && grey > far){
-                particles.push_back( Particle ( ofPoint ( x + xOffset , y + yOffset ) , grey, color ) ) ;
-            }
+			//store width and height for optimization and clarity
+			int w = imgd.width ; 
+			int h = imgd.height ; 
+			numParticles = ( imgd.width * imgd.height ) / sampling ; 
             
-        }
-    }
+			//offsets to center the particle son screen
+			int xOffset = (ofGetWidth() - w ) /2 ; 
+			int yOffset = (ofGetHeight() - h ) /2 ;
+            
+			//Loop through all the rows
+			for ( int x = 0 ; x < w ; x+=sampling ) 
+			{
+				//Loop through all the columns
+				for ( int y = 0 ; y < h ; y+=sampling ) 
+				{
+					//Pixels are stored as unsigned char ( 0 <-> 255 ) as RGB
+					//If our image had transparency it would be 4 for RGBA
+					int index = ( y * w + x ) ; 
+					int colorIndex = index * 3 ;
+					int grey = pixels[index];
+                    
+					ofColor color;
+					color.r = colorPixels[colorIndex] ;       //red pixel
+					color.g = colorPixels[colorIndex+1] ;     //blue pixel
+					color.b = colorPixels[colorIndex+2] ;     //green pixel
+//                    if(grey < 230 && grey > 0) {
+                    particles.push_back( Particle ( ofPoint ( x + xOffset , y + yOffset ) , grey, color ) ) ;  
+//                    }
 
+				}
+			}
+		} else {
+			trailing++;
+            //particles.clear();
+		}
+        
+        
+    }
+	updateParticles();
 }
 
 void testApp::draw()
-{	    
-	ofEnableAlphaBlending();
-	camluc.render();
+{	 
+    float w = 1024;
+	float h = 768;
+    glClearColor(0, 0, 0, 1);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glColor3f(1, 1, 1);
+    ofPushMatrix(); 
+    
+    //draws a star
+    //ofSetPolyMode(OF_POLY_WINDING_NONZERO);
+    //    glBegin(GL_LINE);
+    //    for (int y=0;y<640;y+=5){
+    //        ofBeginShape();
+    //        for (int x=0;x<480*3;x+=3){
+    //            int pix1 = (y*640*3) + x;
+    //            int pix2 = (y*640*3) + (x+1);
+    //            int pix3 = (y*640*3) + (x+2);
+    //            glColor3f(pix1,pix2,pix3);
+    //            glVertex3f(x*2,y*2, 1);
+    //        }
+    //        ofEndShape();
+    //    }
+    //    glEnd();
+    //    ofPopMatrix();
+    
+    //cout << pulse << endl;
+    //ofTranslate(10,100,pulse);
+    
+    glClearColor(0, 0, 0, 1);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+	//Begin the openGL Drawing Mode
+    glBegin(GL_POINTS);
+    
+    //Triangles look Cool too 
+    //glBegin(GL_TRIANGLES);
 	
-	glScalef(1, -1, 1);
-	glTranslatef(-0.3, 0.3, 1);
-	glutWireTeapot(0.1);
+    //glBegin(GL_LINE_LOOP);
+    
+    //Create an iterator to cycle through the vector
+    std::vector<Particle>::iterator p ; 
+    for ( p = particles.begin() ; p != particles.end() ; p++ )
+    {
+        //glColor3ub((unsigned char)p->grey,(unsigned char)p->grey,(unsigned char)p->grey);
+        glColor3ub((unsigned char)p->color.r,(unsigned char)p->color.g,(unsigned char)p->color.b);
+		//glColor4ub((unsigned char)p->color.r,(unsigned char)p->color.g,(unsigned char)p->color.b,(unsigned char)p->grey);
+        glVertex3f(p->position.x, p->position.y , 0 );
+    }
+    
+    glEnd();
+    ofPopMatrix();  
+    
+    
+    ofSetColor ( 255 , 255 , 255 ) ;
+    
+    string output = "S :: Springs on/off : " + ofToString(springEnabled) +
+    
+    "\n C :: CursorMode repel/attract " + ofToString( cursorMode ) +
+    
+    "\n # of particles : " + ofToString( numParticles ) +
+    
+    " \n fps:" +ofToString( ofGetFrameRate() ) ;
+    
+    ofDrawBitmapString(output ,20,666);
+	imgd.draw(0,0,100,150);
+
+
 }
+
 
 void testApp::exit()
 {
-	ofLog(OF_LOG_VERBOSE, "exit!");
-	
-	ofRemoveListener(camluc.render_texture, this, &testApp::render_texture);
-	ofRemoveListener(camluc.render_hud, this, &testApp::render_hud);
-	
-	camluc.dispose();
 	kinect.close();
-	
-	delete mesh;
-	mesh = NULL;
 }
 
-void testApp::render_hud(ofEventArgs &args)
+
+void testApp::keyPressed(int key)
 {
+	pressed[key] = true;
+	
+}
+
+void testApp::keyReleased(int key)
+{
+    pressed[key] = false;
 
 }
 
-void testApp::render_texture(ofEventArgs &args)
+void testApp::init_keys()
 {
-	glClearColor(0, 0, 0, 1);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	float w = 1024;
-	float h = 768;
-	
-	glViewport(0, 0, w, h);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, w, 0, h, -1, 1);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-    
-    if (debug_hue_texture) {
-        mesh->debug_hue_texture(0, 0, tex_width, tex_height);  
-    }
-    
-    
-    else {
-        std::vector<Particle>::iterator p;
-        glColor3f(1, 1, 1);
-        
-        glBegin(GL_POINTS); 
-        
-        if (!radio_on) {
-            for (p = particles.begin();p!=particles.end();p++){
-                int x = (p->position.x) + ofRandom(-1,1);
-                int y = (p->position.y) + ofRandom(-1,1);
-                glColor3ub(255,255,255);
-//                glColor3ub((unsigned char)p->color.r,(unsigned char)p->color.g,(unsigned char)p->color.b);
-                glVertex3f(x,y,0);
-            }
-        } else if (radio_on) {
-            for ( p = particles.begin() ; p != particles.end() ; p++ )
-            {
-                if (ofGetFrameNum() % 200 >= 0 && ofGetFrameNum() % 200 < 10){
-                    glColor3ub(255,255,255);
-                }
-                else {
-                    glColor3ub((unsigned char)p->color.r,(unsigned char)p->color.g,(unsigned char)p->color.b);
-                }
-                glVertex3f(p->position.x, p->position.y , 0 );
-            }
-        }
-        
-        glEnd();
-        
-        
-//		kinect.getDepthTextureReference().draw(0, 0, tex_width, tex_height);
-
-    }
-
-    
-	//depthImage.draw(0,h/2,w/2,h);
-	//grayImage.draw(0,0,w,h);
-	//kinect.getDepthTextureReference().draw(w/2, h/2, w/2+400, h/2+300);	
-	//contourFinder.draw(0, 0, w, h);
-
-	glColor3f(1, 1, 0);
-	ofCircle(800, 200, 100);
+    for (int i = 0; i < 512; i++) 
+        pressed[i] = false;
 }
 
-bool testApp::init_kinect()
+void testApp::mouseMoved(int x, int y )
 {
-	//kinect.enableCalibrationUpdate(false);
-	//kinect.enableDepthNearValueWhite(false);
-	
-	kinect.init();
-	kinect.open();
-	//	ktilt = 0;
-	//	kinect.setCameraTiltAngle(ktilt);
-	
-	return update_kinect();
+    
 }
 
-bool testApp::update_kinect()
+void testApp::mouseDragged(int x, int y, int button)
 {
-	if (!kinect.isConnected())
-		return false;
-	
-	kinect.update();
-	raw_depth_pix = kinect.getRawDepthPixels();
-	
-	return true;
+    
+}
+
+
+
+void testApp::mousePressed(int x, int y, int button)
+{
+    cout << x << ", " << y << endl;
+}
+
+void testApp::mouseReleased(int x, int y, int button)
+{
+    
+}
+
+void testApp::resized(int w, int h)
+{
+    
+}
+
+void testApp::debug()
+{
+    
+}
+
+void testApp::startPlayback() {
+    
+    kinect.close();
+    
+    // set record file and source
+    kinectPlayer.setup(ofToDataPath("recording.dat"), true);
+    kinectPlayer.loop();
+    kinectSource = &kinectPlayer;
+    bPlayback = true;
+}
+
+//--------------------------------------------------------------
+void testApp::stopPlayback() {
+    kinectPlayer.close();
+    kinect.open();
+    kinectSource = &kinect;
+    bPlayback = false;
 }
 
 void testApp::updateParticles() {
@@ -292,100 +306,4 @@ void testApp::updateParticles() {
         p->velocity += p->acceleration * ratio ; 
         p->position += p->velocity ; 
     }
-}
-
-
-void testApp::keyPressed(int key)
-{
-	pressed[key] = true;
-    
-    if (key == 'm'){
-        mesh->print();
-    }
-	if (key == 'd')
-	{
-		camluc.toggle_debug();
-	}
-	if (key == 'f')
-	{
-        if (ofGetWindowPositionX() == 0)
-        {
-            ofSetWindowPosition(1440,0);
-            ofSetFullscreen(true);
-        }
-        else
-        {
-            ofSetWindowPosition(0,0);
-            ofSetFullscreen(false);
-        }
-	}
-	if (key == 't') 
-	{
-		far++;
-		cout << "far: " << far << endl;
-
-	}
-	if (key == 'y')
-	{
-		far--;
-		cout << "far: " << far << endl;
-	}
-	if (key == 'u')
-	{
-		near++;
-		cout << "near: " << near << endl;
-	}
-	if (key =='i') {
-		near--;
-		cout << "near: " << near << endl;
-	}
-	if (key =='r') {
-		radio_on = !radio_on;
-	}
-    if (key == 'a') {
-        debug_hue_texture = !debug_hue_texture;
-        cout << "debug? " << debug_hue_texture << endl;
-        //kinect.toggleCalibrationUpdate();
-    }
-}
-
-void testApp::keyReleased(int key)
-{
-	pressed[key] = false;
-}
-
-void testApp::init_keys()
-{
-	for (int i = 0; i < 512; i++) 
-		pressed[i] = false;
-}
-
-void testApp::mouseMoved(int x, int y )
-{
-	
-}
-
-void testApp::mouseDragged(int x, int y, int button)
-{
-	
-}
-
-void testApp::mousePressed(int x, int y, int button)
-{
-	cout << x << ", " << y << endl;
-}
-
-void testApp::mouseReleased(int x, int y, int button)
-{
-	
-}
-
-void testApp::resized(int w, int h)
-{
-	
-}
-
-void testApp::debug()
-{
-	
 }

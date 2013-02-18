@@ -1,96 +1,77 @@
-//	Cámara Lúcida
-//	www.camara-lucida.com.ar
-//
-//	Copyright (C) 2011  Christian Parsons
-//	www.chparsons.com.ar
-//
-//	This program is free software: you can redistribute it and/or modify
-//	it under the terms of the GNU General Public License as published by
-//	the Free Software Foundation, either version 3 of the License, or
-//	(at your option) any later version.
-//
-//	This program is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//	GNU General Public License for more details.
-//
-//	You should have received a copy of the GNU General Public License
-//	along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 #pragma once
 
 #include "ofMain.h"
-
-#include "ofxOpenCv.h"
+#include <GLUT/glut.h>
+#include "ofxCv.h"
+#include "vectorField.h"
 #include "ofxKinect.h"
-
+#include "Particle.h"
 #include "CamaraLucida.h"
 #include "cmlMesh_freenect.h"
 #include <GLUT/glut.h>
 
-#include "Particle.h"
+
+
+
 
 class testApp : public ofBaseApp 
 {
-public:
-	
+public:	
+    
 	cml::CamaraLucida camluc;
-	cml::Mesh_freenect *mesh;
-	
+    
 	void render_texture(ofEventArgs &args);
 	void render_hud(ofEventArgs &args);
-	
-	bool debug_depth_texture;
-    bool debug_hue_texture;
-
-	
-	
-	//	kinect
-	
-	ofxKinect kinect;
+    
+	cml::Mesh_freenect *mesh;
+    
 	uint16_t *raw_depth_pix;
-	uint8_t *rgb_pix;
-	
-	bool init_kinect();
-	bool update_kinect();
     
-    
-	float tex_width;
-	float tex_height;
-	
-	// threshold
-	int far;
-	int near;
-	
-	//serial
-	ofSerial	serial;
-	bool		radio_on;
-	int			rf;
-	int			timer;
-
+    bool radio_on;
 	//	ui
 	
 	bool pressed[512];
 	void init_keys();
-	
+   
+    ofImage imgd;
+
 	// analysis
-	ofxCvContourFinder 	contourFinder;
-	ofxCvGrayscaleImage grayImage;
-	ofxCvGrayscaleImage depthImage;
-	ofxCvGrayscaleImage pastDepth;
-	ofxCvColorImage colorImg;
+    ofxCv::ContourFinder contourFinder;
+    float threshold;
     
-    //particles
-    int sampling;
-    vector<Particle> particles;
-    int numParticles;
+	ofPolyline						drawing;		  //	we draw with this first
+
+	
+    vectorField VF;
     
-    //particle engine
-    int cursorMode; 
-    float forceRadius; 
-    float friction; 
-    float springFactor; 
-    bool springEnabled;
+    ofImage colorImg;
+    
+    int trailing;
+    float a;
+    float pulse;
+    
+    ofxKinect 			kinect;
+  
+    int 				nearThreshold;
+    int					farThreshold;
+    ofxBase3DVideo* 	kinectSource;
+    bool 				bRecord;
+    bool 				bPlayback;
+    ofxKinectPlayer 	kinectPlayer;
+    
+
+    int sampling ;                  //pixels to skip
+	vector<Particle> particles ;    //vector to store pixels
+	int numParticles ;          //Number of particles 
+    
+    
+    
+	//Spring and Sink Factors
+	bool springEnabled ;        //toggle whether particles return to their origin
+	float forceRadius ;             //radius of repellent/attraction force
+	float friction ;                //damping to slow the particles down
+	float springFactor ;          //how much the particle "springs" back to origin
+	int cursorMode ;            
 
 	// app
 	
@@ -108,7 +89,8 @@ public:
 	void resized(int w, int h);
 	
 	void debug();
-    void createParticles(int _sampling);
+    
+    void startPlayback();
+    void stopPlayback();
     void updateParticles();
-	
 };
